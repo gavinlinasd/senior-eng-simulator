@@ -16,8 +16,7 @@ interface LevelPanelProps {
   selectionLabel: string | null
   onRemoveSelected: () => void
   onResetLevel: () => void
-  /** Absent when the level has no walkthrough. */
-  onShowIntro?: () => void
+  onShowIntro: () => void
   hasNext: boolean
   onNext: () => void
 }
@@ -104,11 +103,9 @@ export function LevelPanel({
         <button className="btn btn--muted" onClick={onResetLevel}>
           Reset level
         </button>
-        {onShowIntro && (
-          <button className="btn btn--muted" onClick={onShowIntro}>
-            How to play
-          </button>
-        )}
+        <button className="btn btn--muted" onClick={onShowIntro}>
+          Replay intro
+        </button>
       </div>
     </aside>
   )

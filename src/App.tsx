@@ -14,9 +14,10 @@ import { LEVELS } from './levels'
 import { CATALOGUE, costOf } from './sim/catalogue'
 import { breakingPoint, computeShares, evaluate } from './sim/engine'
 import { score as scoreOf } from './sim/score'
-import type { IntroStep, NodeType } from './sim/types'
+import type { NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
+import { introFor } from './ui/defaultIntro'
 import {
   FIT_VIEW_OPTIONS,
   fromLevel,
@@ -51,12 +52,9 @@ function isStructural(changes: Array<NodeChange<FlowNode> | EdgeChange<FlowEdge>
   return changes.some((c) => c.type === 'add' || c.type === 'remove')
 }
 
-const NO_STEPS: IntroStep[] = []
-
-/** Step to open a level's walkthrough at, or null if it has none or has been seen. */
+/** Step to open a level's walkthrough at, or null if it has been seen. */
 function tourStartFor(levelIndex: number): number | null {
-  const level = LEVELS[levelIndex]
-  return level.intro && !introSeen(level.id) ? 0 : null
+  return introSeen(LEVELS[levelIndex].id) ? null : 0
 }
 
 function Game() {
@@ -89,7 +87,7 @@ function Game() {
     tourRef.current = i
     setTourIndexState(i)
   }, [])
-  const tourSteps = level.intro ?? NO_STEPS
+  const tourSteps = useMemo(() => introFor(level), [level])
   const closeTour = useCallback(() => {
     markIntroSeen(level.id)
     setTourIndex(null)
@@ -250,7 +248,7 @@ function Game() {
           selectionLabel={selectionLabel}
           onRemoveSelected={removeSelected}
           onResetLevel={resetLevel}
-          onShowIntro={level.intro ? () => setTourIndex(0) : undefined}
+          onShowIntro={() => setTourIndex(0)}
           hasNext={hasNext}
           onNext={nextLevel}
         />

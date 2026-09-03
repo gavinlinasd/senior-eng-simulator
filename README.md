@@ -1,5 +1,7 @@
 # Senior Eng Simulator
 
+Play it: https://senior-eng-simulator.gavin-lin-asd.workers.dev/
+
 A browser game that teaches distributed system design by letting you build an architecture and watch it fail under load. You wire servers and load balancers on a board, send a ramp of traffic, and the first component to hit 100% freezes the run so you can see what gave out. There is no lesson up front: you build it, it breaks, you work out why.
 
 ## Run it
