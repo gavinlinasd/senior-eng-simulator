@@ -11,10 +11,11 @@ import {
   type XYPosition,
 } from '@xyflow/react'
 import { LEVELS } from './levels'
+import { carryInto } from './sim/carry'
 import { CATALOGUE, costOf } from './sim/catalogue'
-import { breakingPoint, computeShares, evaluate } from './sim/engine'
+import { ALL_READS, breakingPoint, computeShares, evaluate } from './sim/engine'
 import { score as scoreOf } from './sim/score'
-import type { NodeType } from './sim/types'
+import type { Graph, NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
 import { introFor } from './ui/defaultIntro'
@@ -30,6 +31,7 @@ import {
 } from './ui/flow'
 import { introSeen, markIntroSeen } from './ui/intro'
 import { LevelPanel } from './ui/LevelPanel'
+import { LevelPickerModal } from './ui/LevelPickerModal'
 import { RunContext, type RunState } from './ui/RunContext'
 import { RunHud } from './ui/RunHud'
 import { SuccessModal } from './ui/SuccessModal'
@@ -62,6 +64,8 @@ function Game() {
   const level = LEVELS[levelIndex]
   const hasNext = levelIndex < LEVELS.length - 1
 
+  /** The board the current level was entered with. Reset level goes back to it. */
+  const [entryBoard, setEntryBoard] = useState<Graph>(level.start)
   const [initial] = useState(() => fromLevel(level.start))
   const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>(initial.nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>(initial.edges)
@@ -73,7 +77,8 @@ function Game() {
 
   // Derived sim state. Recomputed on every edit; the model is linear so this is cheap.
   const graph = useMemo(() => toGraph(nodes, edges), [nodes, edges])
-  const shares = useMemo(() => computeShares(graph), [graph])
+  const traffic = level.traffic ?? ALL_READS
+  const shares = useMemo(() => computeShares(graph, traffic), [graph, traffic])
   const errors = useMemo(() => validate(graph, level), [graph, level])
   const spend = costOf(graph)
   const bp = useMemo(() => breakingPoint(graph, shares), [graph, shares])
@@ -115,9 +120,10 @@ function Game() {
 
   const run = useTrafficRun(level, bp, onOutcome)
   const results = useMemo(() => evaluate(graph, shares, run.qps), [graph, shares, run.qps])
+  const showClasses = traffic.write > 0
   const runState = useMemo<RunState>(
-    () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId }),
-    [run.phase, run.qps, results, run.failedNodeId],
+    () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId, showClasses }),
+    [run.phase, run.qps, results, run.failedNodeId, showClasses],
   )
 
   // The pass modal shows once per run; dismissing it remembers which run was dismissed.
@@ -128,11 +134,12 @@ function Game() {
   // ----- levels -----
   const reset = run.reset
 
-  const loadLevel = useCallback(
-    (index: number) => {
-      const start = fromLevel(LEVELS[index].start)
+  const enterLevel = useCallback(
+    (index: number, board: Graph) => {
+      const start = fromLevel(board)
       reset()
       setLevelIndex(index)
+      setEntryBoard(board)
       setNodes(start.nodes)
       setEdges(start.edges)
       void fitView(FIT_VIEW_OPTIONS)
@@ -141,10 +148,15 @@ function Game() {
     [reset, setNodes, setEdges, fitView, setTourIndex],
   )
 
-  const resetLevel = useCallback(() => loadLevel(levelIndex), [loadLevel, levelIndex])
+  /** Jump to a level with its own fresh board. */
+  const loadLevel = useCallback((index: number) => enterLevel(index, LEVELS[index].start), [enterLevel])
+  const resetLevel = useCallback(() => enterLevel(levelIndex, entryBoard), [enterLevel, levelIndex, entryBoard])
+  /** Advance, carrying the current board into the next level. */
   const nextLevel = useCallback(() => {
-    if (hasNext) loadLevel(levelIndex + 1)
-  }, [hasNext, loadLevel, levelIndex])
+    if (hasNext) enterLevel(levelIndex + 1, carryInto(graph, LEVELS[levelIndex + 1]))
+  }, [hasNext, enterLevel, levelIndex, graph])
+
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   // ----- editing -----
   const handleNodesChange = useCallback(
@@ -230,6 +242,7 @@ function Game() {
             phase={run.phase}
             qps={run.qps}
             targetQps={level.targetQps}
+            traffic={level.traffic}
             blocked={errors.length > 0}
             onPlay={run.play}
             onStop={reset}
@@ -251,10 +264,16 @@ function Game() {
           onShowIntro={() => setTourIndex(0)}
           hasNext={hasNext}
           onNext={nextLevel}
-          onJump={loadLevel}
+          onOpenPicker={() => setPickerOpen(true)}
         />
       </div>
       <Tutorial steps={tourSteps} index={tourIndex} onNext={tourNext} onBack={tourBack} onClose={closeTour} />
+      <LevelPickerModal
+        open={pickerOpen}
+        current={levelIndex}
+        onPick={loadLevel}
+        onClose={() => setPickerOpen(false)}
+      />
       <SuccessModal
         open={celebrating}
         level={level}

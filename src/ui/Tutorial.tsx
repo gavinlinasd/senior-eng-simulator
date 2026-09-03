@@ -8,6 +8,7 @@ const TARGETS: Record<TourTarget, string> = {
   panel: '.panel',
   hud: '.hud',
   new: '.tray__item.is-new',
+  locked: '.sim-node.is-locked',
 }
 
 const PAD = 8

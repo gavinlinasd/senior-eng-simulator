@@ -16,10 +16,11 @@ export default function TrafficEdge({
   markerEnd,
   selected,
 }: EdgeProps) {
-  const { qps, results, phase } = useRunState()
+  const { qps, results, phase, showClasses } = useRunState()
   const { deleteElements } = useReactFlow()
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
-  const load = results[target]?.load ?? 0
+  const r = results[target] ?? { load: 0, read: 0, write: 0, util: 0 }
+  const load = r.load
   const active = qps > 0
   const flowing = phase === 'running' || phase === 'passed'
   const duration = Math.max(0.2, 1.2 - Math.min(1, load / 800))
@@ -36,6 +37,11 @@ export default function TrafficEdge({
               style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
             >
               {fmt(load)} QPS
+              {showClasses && (
+                <small>
+                  {fmt(r.read)} R · {fmt(r.write)} W
+                </small>
+              )}
             </div>
           )}
           {selected && (

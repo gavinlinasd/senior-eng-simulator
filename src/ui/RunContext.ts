@@ -8,10 +8,12 @@ export interface RunState {
   qps: number
   results: Evaluation
   failedNodeId: string | null
+  /** Show reads and writes separately (the level has writes). */
+  showClasses: boolean
 }
 
 /** Per-frame run state. Nodes and edges read their own numbers from here. */
-export const RunContext = createContext<RunState>({ phase: 'idle', qps: 0, results: {}, failedNodeId: null })
+export const RunContext = createContext<RunState>({ phase: 'idle', qps: 0, results: {}, failedNodeId: null, showClasses: false })
 
 export function useRunState() {
   return useContext(RunContext)

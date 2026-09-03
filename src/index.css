@@ -220,6 +220,19 @@ button:focus-visible,
   text-align: right;
 }
 
+.sim-node__classes {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-node__lock {
+  margin-left: 5px;
+  vertical-align: -1px;
+  color: var(--muted);
+}
+
 .sim-node__qps {
   font-size: 18px;
   font-weight: 700;
@@ -270,6 +283,12 @@ button:focus-visible,
 .react-flow__edge.selected .react-flow__edge-path.traffic-edge {
   stroke: var(--ink);
   stroke-width: 3;
+}
+
+.traffic-edge__label small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
 }
 
 .traffic-edge__label {
@@ -354,9 +373,16 @@ button:focus-visible,
 }
 
 .hud__qps {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   font-variant-numeric: tabular-nums;
+}
+
+.hud__mix {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ---------- tray ---------- */
@@ -478,17 +504,6 @@ button:focus-visible,
 .panel__eyebrow {
   font-size: 13px;
   color: var(--muted);
-}
-
-.level-picker {
-  appearance: none;
-  -webkit-appearance: none;
-  text-align: center;
-  font: inherit;
-  font-size: 13px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7684'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
 }
 
 .panel__title {
@@ -915,4 +930,61 @@ dialog::backdrop {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* ---------- level picker ---------- */
+
+.picker__title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.picker__hint {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker__item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker__item:hover {
+  border-color: var(--accent);
+}
+
+.picker__item.is-current {
+  border-color: var(--accent);
+  background: #eef4ff;
+}
+
+.picker__level {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.picker__name {
+  font-weight: 600;
+}
+
+.picker__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
 }

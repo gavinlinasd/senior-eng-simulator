@@ -1,19 +1,22 @@
 import { Panel } from '@xyflow/react'
 import { Play, RotateCcw, Square } from 'lucide-react'
-import { fmt } from './format'
+import type { ClassLoad } from '../sim/types'
+import { fmt, pct } from './format'
 import type { Phase } from './RunContext'
 
 interface RunHudProps {
   phase: Phase
   qps: number
   targetQps: number
+  /** Read/write mix, shown when the level has writes. */
+  traffic?: ClassLoad
   blocked: boolean
   onPlay: () => void
   onStop: () => void
 }
 
 /** Play/stop controls plus a ramp meter, floating over the board. */
-export function RunHud({ phase, qps, targetQps, blocked, onPlay, onStop }: RunHudProps) {
+export function RunHud({ phase, qps, targetQps, traffic, blocked, onPlay, onStop }: RunHudProps) {
   const running = phase === 'running'
   return (
     <Panel position="top-left" className="hud">
@@ -47,6 +50,11 @@ export function RunHud({ phase, qps, targetQps, blocked, onPlay, onStop }: RunHu
       </div>
       <div className="hud__qps">
         {fmt(qps)} / {fmt(targetQps)} QPS
+        {traffic && traffic.write > 0 && (
+          <span className="hud__mix">
+            {pct(traffic.read)}% reads · {pct(traffic.write)}% writes
+          </span>
+        )}
       </div>
     </Panel>
   )

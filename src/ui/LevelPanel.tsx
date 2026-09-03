@@ -1,5 +1,5 @@
-import { LEVELS } from '../levels'
 import { CATALOGUE } from '../sim/catalogue'
+import { total } from '../sim/engine'
 import type { BreakingPoint, Level, Score, Shares, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
 import { Lesson } from './Lesson'
@@ -21,8 +21,7 @@ interface LevelPanelProps {
   onShowIntro: () => void
   hasNext: boolean
   onNext: () => void
-  /** Jump straight to a level (fresh start board). */
-  onJump: (index: number) => void
+  onOpenPicker: () => void
 }
 
 export function LevelPanel({
@@ -40,8 +39,10 @@ export function LevelPanel({
   onShowIntro,
   hasNext,
   onNext,
-  onJump,
+  onOpenPicker,
 }: LevelPanelProps) {
+  const failedShare = failedNode ? (shares?.[failedNode.id] ?? { read: 0, write: 0 }) : null
+  const showClasses = (level.traffic?.write ?? 0) > 0
   return (
     <aside className="panel">
       <div>
@@ -74,8 +75,15 @@ export function LevelPanel({
             {failedNode.name} hit 100% at {fmt(breaking.qps)} QPS
           </div>
           <div className="verdict__body">
-            Receiving {pct(shares?.[failedNode.id] ?? 0)}% of all traffic against a capacity of{' '}
-            {fmt(CATALOGUE[failedNode.type].capacity)} QPS.
+            Receiving {pct(failedShare ? total(failedShare) : 0)}% of all traffic
+            {showClasses && failedShare && (
+              <>
+                {' '}
+                ({fmt(failedShare.read * breaking.qps)} reads and {fmt(failedShare.write * breaking.qps)} writes a
+                second)
+              </>
+            )}{' '}
+            against a capacity of {fmt(CATALOGUE[failedNode.type].capacity)} QPS.
           </div>
         </div>
       )}
@@ -101,18 +109,9 @@ export function LevelPanel({
       )}
 
       <div className="panel__actions">
-        <select
-          className="btn btn--muted level-picker"
-          aria-label="Jump to level"
-          value={LEVELS.indexOf(level)}
-          onChange={(e) => onJump(Number(e.target.value))}
-        >
-          {LEVELS.map((l, i) => (
-            <option key={l.id} value={i}>
-              Level {l.id}: {l.title}
-            </option>
-          ))}
-        </select>
+        <button className="btn btn--muted" onClick={onOpenPicker}>
+          Jump to level
+        </button>
         {selectionLabel && (
           <button className="btn" onClick={onRemoveSelected}>
             Remove {selectionLabel}

@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
-import { X } from 'lucide-react'
+import { Lock, X } from 'lucide-react'
 import { CATALOGUE } from '../sim/catalogue'
 import { statusOf } from '../sim/engine'
 import type { FlowNode } from './flow'
@@ -11,20 +11,30 @@ import { useRunState } from './RunContext'
 const SEGMENTS = 10
 
 function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
-  const { qps, results, failedNodeId } = useRunState()
+  const { qps, results, failedNodeId, showClasses } = useRunState()
   const { deleteElements } = useReactFlow()
   const spec = CATALOGUE[data.simType]
   const Icon = ICONS[data.simType]
-  const r = results[id] ?? { load: 0, util: 0 }
+  const r = results[id] ?? { load: 0, read: 0, write: 0, util: 0 }
   const isUsers = data.simType === 'users'
   const status = isUsers ? 'users' : statusOf(r.util)
   const lit = Math.round(Math.min(1, r.util) * SEGMENTS)
-  const className = ['sim-node', `sim-node--${data.simType}`, failedNodeId === id ? 'is-failed' : ''].join(' ')
+  const className = [
+    'sim-node',
+    `sim-node--${data.simType}`,
+    failedNodeId === id ? 'is-failed' : '',
+    data.locked ? 'is-locked' : '',
+  ].join(' ')
+  const classes = showClasses ? (
+    <div className="sim-node__classes">
+      {fmt(r.read)} R · {fmt(r.write)} W
+    </div>
+  ) : null
 
   return (
     <div className={className} data-status={status}>
       {!isUsers && <Handle type="target" position={Position.Left} />}
-      {!isUsers && (
+      {!isUsers && !data.locked && (
         <button
           className="sim-node__delete nodrag nopan"
           aria-label={`Remove ${data.name}`}
@@ -41,11 +51,17 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
         <Icon size={22} aria-hidden />
       </div>
       <div className="sim-node__body">
-        <div className="sim-node__name">{data.name}</div>
+        <div className="sim-node__name">
+          {data.name}
+          {data.locked && <Lock size={11} className="sim-node__lock" aria-label="Locked" />}
+        </div>
         {isUsers ? (
-          <div className="sim-node__qps">
-            {fmt(qps)} <span>QPS</span>
-          </div>
+          <>
+            <div className="sim-node__qps">
+              {fmt(qps)} <span>QPS</span>
+            </div>
+            {classes}
+          </>
         ) : (
           <>
             <div className="sim-node__row">
@@ -60,10 +76,11 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
               </div>
               <span className="sim-node__pct">{pct(r.util)}%</span>
             </div>
+            {classes}
           </>
         )}
       </div>
-      <Handle type="source" position={Position.Right} />
+      {!spec.sink && <Handle type="source" position={Position.Right} />}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Cpu, Server, Split, Users, type LucideIcon } from 'lucide-react'
+import { Cpu, Database, Server, Split, Users, Zap, type LucideIcon } from 'lucide-react'
 import type { NodeType } from '../sim/types'
 
 export const ICONS: Record<NodeType, LucideIcon> = {
@@ -6,4 +6,6 @@ export const ICONS: Record<NodeType, LucideIcon> = {
   lb: Split,
   web: Server,
   bigweb: Cpu,
+  cache: Zap,
+  db: Database,
 }
