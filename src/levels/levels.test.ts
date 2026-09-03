@@ -7,10 +7,14 @@ import { chain } from '../sim/fixtures'
 
 describe('levels', () => {
   it('are ordered by id and every start graph is valid', () => {
-    expect(LEVELS.map((l) => l.id)).toEqual([0, 1])
+    expect(LEVELS.map((l) => l.id)).toEqual([0, 1, 2])
     for (const level of LEVELS) {
       expect(validate(level.start, level)).toEqual([])
       for (const t of level.introduces ?? []) expect(level.palette).toContain(t)
+      for (const id of Object.keys(level.carryOver?.wireFrom ?? {})) {
+        expect(level.carryOver?.add.map((n) => n.id)).toContain(id)
+      }
+      if (level.traffic) expect(level.traffic.read + level.traffic.write).toBeCloseTo(1, 10)
     }
   })
 

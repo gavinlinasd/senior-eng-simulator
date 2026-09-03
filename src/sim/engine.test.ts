@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { breakingPoint, computeShares, evaluate, passes, peakUtilization, statusOf } from './engine'
+import { validate } from './validate'
 import { behindLb, chain, edge, node, repeat } from './fixtures'
 import { level1 } from '../levels/level1'
+
+const R = (read: number, write = 0) => ({ read, write })
+const MIX = { read: 0.9, write: 0.1 }
 
 describe('computeShares', () => {
   it('passes the full share down a chain (fan-out)', () => {
     const g = chain('web', 'web')
-    expect(computeShares(g)).toEqual({ users: 1, web1: 1, web2: 1 })
+    expect(computeShares(g)).toEqual({ users: R(1), web1: R(1), web2: R(1) })
   })
 
   it('splits evenly through a load balancer', () => {
     const g = behindLb('web', 'web')
-    expect(computeShares(g)).toEqual({ users: 1, lb1: 1, web1: 0.5, web2: 0.5 })
+    expect(computeShares(g)).toEqual({ users: R(1), lb1: R(1), web1: R(0.5), web2: R(0.5) })
   })
 
   it('returns null for a cycle', () => {
@@ -23,7 +27,7 @@ describe('computeShares', () => {
   it('gives zero share to a node nothing points at', () => {
     const g = chain('web')
     g.nodes.push(node('web', 'orphan'))
-    expect(computeShares(g)?.orphan).toBe(0)
+    expect(computeShares(g)?.orphan).toEqual(R(0))
   })
 })
 
@@ -31,9 +35,9 @@ describe('evaluate', () => {
   it('computes load and utilization per node', () => {
     const g = behindLb('web', 'web')
     const r = evaluate(g, computeShares(g), 400)
-    expect(r.users).toEqual({ load: 400, util: 0 })
-    expect(r.lb1).toEqual({ load: 400, util: 400 / 5000 })
-    expect(r.web1).toEqual({ load: 200, util: 200 / 300 })
+    expect(r.users).toEqual({ load: 400, read: 400, write: 0, util: 0 })
+    expect(r.lb1).toEqual({ load: 400, read: 400, write: 0, util: 400 / 5000 })
+    expect(r.web1).toEqual({ load: 200, read: 200, write: 0, util: 200 / 300 })
   })
 })
 
@@ -98,5 +102,59 @@ describe('statusOf', () => {
     expect(statusOf(0.89)).toBe('warn')
     expect(statusOf(0.9)).toBe('over')
     expect(statusOf(1.2)).toBe('over')
+  })
+})
+
+describe('traffic classes and cache-aside', () => {
+  it('splits user traffic into reads and writes', () => {
+    const g = chain('web')
+    expect(computeShares(g, MIX)).toEqual({ users: R(0.9, 0.1), web1: R(0.9, 0.1) })
+  })
+
+  it('a web server without a cache sends everything on, as before', () => {
+    const g = chain('web', 'db')
+    expect(computeShares(g, MIX)?.db1).toEqual(R(0.9, 0.1))
+  })
+
+  it('a cache takes the reads as lookups and only misses and writes reach the database', () => {
+    const g = chain('web', 'db')
+    g.nodes.push(node('cache', 'cache1'))
+    g.edges.push(edge('web1', 'cache1'))
+    const s = computeShares(g, MIX)!
+    expect(s.cache1).toEqual(R(0.9, 0))
+    expect(s.db1.read).toBeCloseTo(0.9 * 0.15, 10)
+    expect(s.db1.write).toBeCloseTo(0.1, 10)
+  })
+
+  it('level 2 shape: LB + 6 web + cache + db passes at 1,500 with the database at 70%', () => {
+    const g = behindLb(...repeat('web', 6))
+    g.nodes.push(node('cache', 'cache1'), node('db', 'db1'))
+    for (let i = 1; i <= 6; i++) g.edges.push(edge(`web${i}`, 'cache1'), edge(`web${i}`, 'db1'))
+    const s = computeShares(g, MIX)
+    const r = evaluate(g, s, 1500)
+    expect(r.db1.load).toBeCloseTo(352.5, 5)
+    expect(r.db1.util).toBeCloseTo(0.705, 5)
+    expect(r.cache1.load).toBeCloseTo(1350, 5)
+    expect(r.web1.util).toBeCloseTo(0.8333, 3)
+    expect(passes(breakingPoint(g, s), 1500)).toBe(true)
+  })
+
+  it('without the cache the database dies at 500 no matter how many web servers', () => {
+    const g = behindLb(...repeat('web', 8))
+    g.nodes.push(node('db', 'db1'))
+    for (let i = 1; i <= 8; i++) g.edges.push(edge(`web${i}`, 'db1'))
+    const bp = breakingPoint(g, computeShares(g, MIX))!
+    expect(bp.nodeId).toBe('db1')
+    expect(bp.qps).toBeCloseTo(500, 6)
+  })
+
+  it('wire rules: users to cache, cache forwarding, cache with no fallback', () => {
+    const level = { ...level1, traffic: MIX }
+    const direct = chain('cache')
+    expect(validate(direct, level)).toContainEqual(expect.stringContaining("Cache cache1 can't be wired from Users"))
+    const forwarding = chain('web', 'cache', 'db')
+    expect(validate(forwarding, level)).toContainEqual(expect.stringContaining("doesn't forward requests"))
+    const noFallback = chain('web', 'cache')
+    expect(validate(noFallback, level)).toContainEqual(expect.stringContaining('have nowhere to go'))
   })
 })
