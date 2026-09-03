@@ -1,0 +1,10 @@
+// Cloudflare Workers, static assets only. The whole app is the Vite build in dist/.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "senior-eng-simulator",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
