@@ -1,5 +1,6 @@
 import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, Position, useReactFlow, type NodeProps } from '@xyflow/react'
+import { X } from 'lucide-react'
 import { CATALOGUE } from '../sim/catalogue'
 import { statusOf } from '../sim/engine'
 import type { FlowNode } from './flow'
@@ -11,6 +12,7 @@ const SEGMENTS = 10
 
 function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   const { qps, results, failedNodeId } = useRunState()
+  const { deleteElements } = useReactFlow()
   const spec = CATALOGUE[data.simType]
   const Icon = ICONS[data.simType]
   const r = results[id] ?? { load: 0, util: 0 }
@@ -22,6 +24,19 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   return (
     <div className={className} data-status={status}>
       {!isUsers && <Handle type="target" position={Position.Left} />}
+      {!isUsers && (
+        <button
+          className="sim-node__delete nodrag nopan"
+          aria-label={`Remove ${data.name}`}
+          title="Remove"
+          onClick={(e) => {
+            e.stopPropagation()
+            void deleteElements({ nodes: [{ id }] })
+          }}
+        >
+          <X size={12} aria-hidden />
+        </button>
+      )}
       <div className="sim-node__icon">
         <Icon size={22} aria-hidden />
       </div>

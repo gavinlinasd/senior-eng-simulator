@@ -71,6 +71,7 @@ button:focus-visible,
 
 .sim-node {
   --c: var(--traffic);
+  position: relative;
   width: 224px;
   display: flex;
   align-items: center;
@@ -113,6 +114,41 @@ button:focus-visible,
 
 .react-flow__node.dragging .sim-node {
   cursor: grabbing;
+}
+
+.sim-node__delete,
+.traffic-edge__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--over);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.sim-node__delete {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.react-flow__node:hover .sim-node__delete,
+.react-flow__node.selected .sim-node__delete,
+.sim-node__delete:focus-visible {
+  opacity: 1;
+}
+
+.traffic-edge__delete {
+  position: absolute;
+  pointer-events: all;
 }
 
 .sim-node__icon {

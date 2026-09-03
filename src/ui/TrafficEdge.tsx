@@ -1,4 +1,5 @@
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyflow/react'
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type EdgeProps } from '@xyflow/react'
+import { X } from 'lucide-react'
 import { fmt } from './format'
 import { useRunState } from './RunContext'
 
@@ -13,8 +14,10 @@ export default function TrafficEdge({
   targetPosition,
   target,
   markerEnd,
+  selected,
 }: EdgeProps) {
   const { qps, results, phase } = useRunState()
+  const { deleteElements } = useReactFlow()
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
   const load = results[target]?.load ?? 0
   const active = qps > 0
@@ -25,14 +28,27 @@ export default function TrafficEdge({
   return (
     <>
       <BaseEdge id={id} path={path} markerEnd={markerEnd} className={className} style={{ animationDuration: `${duration}s` }} />
-      {active && (
+      {(active || selected) && (
         <EdgeLabelRenderer>
-          <div
-            className="traffic-edge__label nodrag nopan"
-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
-          >
-            {fmt(load)} QPS
-          </div>
+          {active && (
+            <div
+              className="traffic-edge__label nodrag nopan"
+              style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            >
+              {fmt(load)} QPS
+            </div>
+          )}
+          {selected && (
+            <button
+              className="traffic-edge__delete nodrag nopan"
+              aria-label="Remove wire"
+              title="Remove wire"
+              style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 20}px)` }}
+              onClick={() => void deleteElements({ edges: [{ id }] })}
+            >
+              <X size={12} aria-hidden />
+            </button>
+          )}
         </EdgeLabelRenderer>
       )}
     </>

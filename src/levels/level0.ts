@@ -45,7 +45,7 @@ export const level0: Level = {
       title: 'That was the site falling over',
       body: [
         'Web server 1 maxes out at 300 requests a second, and Hacker News is sending 500. Bmazon rents a bigger machine.',
-        'Select the small server and press Delete. Click the large web server to add it, wire Users to it, then send traffic again.',
+        'Hover the small server and click its × to remove it. Click the large web server to add it, wire Users to it, then send traffic again.',
       ],
       advance: 'passed',
       wait: 'This step finishes when a run passes.',
