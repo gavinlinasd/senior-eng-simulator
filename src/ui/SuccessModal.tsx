@@ -1,6 +1,7 @@
 import { PartyPopper } from 'lucide-react'
 import type { Level, Score } from '../sim/types'
 import { fmt } from './format'
+import { Lesson } from './Lesson'
 import { Modal } from './Modal'
 import { ScoreTable } from './ScoreTable'
 
@@ -25,6 +26,7 @@ export function SuccessModal({ open, level, score, hasNext, onNext, onClose }: S
       </h2>
       <p className="celebrate__sub">Traffic reached {fmt(level.targetQps)} QPS and nothing crossed 100%.</p>
       {score && <ScoreTable score={score} />}
+      {level.lesson && <Lesson lesson={level.lesson} />}
       {score && !score.bonus && (
         <p className="celebrate__tip">Keep every component under 80% for a +50 bonus.</p>
       )}

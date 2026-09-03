@@ -1,6 +1,7 @@
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, Score, Shares, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
+import { Lesson } from './Lesson'
 import type { Phase } from './RunContext'
 import { ScoreTable } from './ScoreTable'
 
@@ -80,6 +81,7 @@ export function LevelPanel({
           <div className="verdict__title">Holding steady at {fmt(level.targetQps)} QPS</div>
           <div className="verdict__body">Nothing crossed 100%. This design serves the target load.</div>
           <ScoreTable score={score} />
+          {level.lesson && <Lesson lesson={level.lesson} />}
           {hasNext ? (
             <button className="btn btn--ok" onClick={onNext}>
               Next level

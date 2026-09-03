@@ -10,6 +10,10 @@ export const level0: Level = {
   rampMs: 5000,
   palette: ['web', 'bigweb'],
   introduces: ['bigweb'],
+  lesson: {
+    title: 'You just did vertical scaling',
+    body: 'One machine couldn’t keep up, so you swapped it for a bigger one. That’s **vertical scaling**: more capacity per box. It’s the simplest fix, and it runs out fast, because boxes only get so big and the price climbs faster than the capacity.',
+  },
   start: {
     nodes: [
       { id: 'users', type: 'users', name: 'Users', x: 80, y: 200 },

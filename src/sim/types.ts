@@ -89,6 +89,8 @@ export interface Level {
   start: Graph
   /** Walkthrough shown the first time the level is entered. */
   intro?: IntroStep[]
+  /** Takeaway shown when the level is passed. Names the technique the player just used. */
+  lesson?: { title: string; body: string }
 }
 
 export interface Score {

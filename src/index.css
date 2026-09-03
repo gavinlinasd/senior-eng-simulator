@@ -725,6 +725,30 @@ dialog::backdrop {
   text-align: left;
 }
 
+.lesson {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #eef4ff;
+  text-align: left;
+}
+
+.lesson__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.lesson__body {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
 .celebrate__tip {
   margin: 8px 0 0;
   font-size: 13px;
