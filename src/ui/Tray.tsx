@@ -5,6 +5,7 @@ import type { NodeType } from '../sim/types'
 import { DRAG_MIME } from './flow'
 import { fmt } from './format'
 import { ICONS } from './icons'
+import { RichText } from './RichText'
 
 interface TrayProps {
   palette: NodeType[]
@@ -59,7 +60,9 @@ export function Tray({ palette, introduces, onAdd }: TrayProps) {
                 <div className="tray__meta">
                   Max {fmt(spec.capacity)} QPS · ${spec.cost}
                 </div>
-                <div className="tray__blurb">{spec.blurb}</div>
+                <div className="tray__blurb">
+                  <RichText text={spec.blurb} />
+                </div>
               </div>
             </div>
           )

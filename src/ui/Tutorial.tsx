@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { IntroStep, TourTarget } from '../sim/types'
+import { RichText } from './RichText'
 
 const TARGETS: Record<TourTarget, string> = {
   board: '.board',
@@ -118,9 +119,15 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
         </h2>
         <div className="tour__body">
           {step.body.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+            <p key={paragraph}>
+              <RichText text={paragraph} />
+            </p>
           ))}
-          {step.note && <p className="tour__about">{step.note}</p>}
+          {step.note && (
+            <p className="tour__about">
+              <RichText text={step.note} />
+            </p>
+          )}
         </div>
         <div className="tour__nav">
           <button className="btn btn--muted" onClick={onClose}>

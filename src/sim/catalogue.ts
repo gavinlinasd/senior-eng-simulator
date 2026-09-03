@@ -15,7 +15,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     capacity: 5000,
     cost: 100,
     distribute: 'split',
-    blurb: 'One address in. Spreads requests evenly across everything wired behind it.',
+    blurb: 'One address in. Spreads requests **evenly** (Round Robin) across everything wired behind it.',
     needsDownstream: true,
   },
   web: {
