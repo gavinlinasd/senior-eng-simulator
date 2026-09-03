@@ -95,17 +95,23 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
   if (!step || index === null) return null
   const last = index === steps.length - 1
   const pos = place(rect, card)
+  // Steps that wait for the player leave the page bright and ring the target instead of dimming around it.
+  const interactive = Boolean(step.advance)
 
   return (
     <div className="tour" role="dialog" aria-labelledby="tour-title">
       {rect ? (
-        <div className="tour__spot" style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }} />
+        <div
+          className={interactive ? 'tour__ring' : 'tour__spot'}
+          style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
+        />
       ) : (
-        <div className="tour__dim" />
+        !interactive && <div className="tour__dim" />
       )}
-      <div ref={cardRef} className="tour__card" style={{ left: pos.left, top: pos.top }}>
+      <div ref={cardRef} className={interactive ? 'tour__card tour__card--turn' : 'tour__card'} style={{ left: pos.left, top: pos.top }}>
         <div className="tour__step">
           {index + 1} of {steps.length}
+          {interactive && <span className="tour__turn">Your turn</span>}
         </div>
         <h2 id="tour-title" className="tour__title">
           {step.title}
