@@ -70,7 +70,7 @@ function Game() {
   const { deleteElements, fitView } = useReactFlow()
 
   useEffect(() => {
-    document.title = `Level ${level.id} · ${level.title}`
+    document.title = `Senior Eng Simulator · Level ${level.id}: ${level.title}`
   }, [level])
 
   // Derived sim state. Recomputed on every edit; the model is linear so this is cheap.

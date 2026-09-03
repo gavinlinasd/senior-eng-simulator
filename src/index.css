@@ -421,6 +421,15 @@ button:focus-visible,
   overflow-y: auto;
 }
 
+.brand {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  text-shadow: 3px 3px 0 rgba(47, 111, 219, 0.18);
+}
+
 .panel__eyebrow {
   font-size: 13px;
   color: var(--muted);

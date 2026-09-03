@@ -40,6 +40,7 @@ export function LevelPanel({
 }: LevelPanelProps) {
   return (
     <aside className="panel">
+      <div className="brand">Senior Eng Simulator</div>
       <div>
         <div className="panel__eyebrow">Level {level.id}</div>
         <h1 className="panel__title">{level.title}</h1>
