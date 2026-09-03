@@ -430,10 +430,11 @@ button:focus-visible,
 
 .tray__item {
   display: flex;
-  flex: 0 0 auto;
+  flex: 1 1 200px;
   gap: 10px;
   align-items: flex-start;
-  width: 272px;
+  min-width: 200px;
+  max-width: 300px;
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
