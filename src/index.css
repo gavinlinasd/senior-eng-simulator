@@ -1,14 +1,15 @@
 :root {
-  --canvas: #233447;
+  --canvas: #e4e9f0;
+  --grid: rgba(24, 34, 48, 0.08);
   --panel: #f5f6f8;
   --ink: #182230;
   --body: #3b4552;
   --muted: #6b7684;
-  --node: #eef2f6;
+  --node: #ffffff;
   --ok: #3a9e77;
   --warn: #d9a23b;
   --over: #d4534b;
-  --traffic: #8ec5ff;
+  --traffic: #3b7ddd;
   --accent: #2f6fdb;
   --border: #e2e5ea;
   --line: #d6dae1;
@@ -106,7 +107,7 @@ button:focus-visible,
 }
 
 .react-flow__node.selected .sim-node {
-  outline: 2px solid white;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -198,8 +199,8 @@ button:focus-visible,
 .sim-node .react-flow__handle {
   width: 14px;
   height: 14px;
-  border: 2px solid white;
-  background: var(--canvas);
+  border: 2px solid var(--muted);
+  background: white;
 }
 
 .sim-node .react-flow__handle-right {
@@ -231,15 +232,16 @@ button:focus-visible,
 }
 
 .react-flow__edge.selected .react-flow__edge-path.traffic-edge {
-  stroke: white;
+  stroke: var(--ink);
   stroke-width: 3;
 }
 
 .traffic-edge__label {
   position: absolute;
   padding: 1px 6px;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  background: rgba(35, 52, 71, 0.85);
+  background: white;
   color: var(--traffic);
   font-size: 11px;
   font-variant-numeric: tabular-nums;

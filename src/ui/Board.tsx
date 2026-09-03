@@ -19,12 +19,12 @@ import TrafficEdge from './TrafficEdge'
 
 const nodeTypes = { sim: SimNode }
 const edgeTypes = { traffic: TrafficEdge }
-const TRAFFIC = '#8EC5FF'
+const TRAFFIC = '#3b7ddd'
 const defaultEdgeOptions = {
   type: 'traffic',
   markerEnd: { type: MarkerType.ArrowClosed, color: TRAFFIC, width: 16, height: 16 },
 }
-const connectionLineStyle = { stroke: 'white', strokeWidth: 2, strokeDasharray: '4 4' }
+const connectionLineStyle = { stroke: '#2f6fdb', strokeWidth: 2, strokeDasharray: '4 4' }
 const deleteKeyCode = ['Backspace', 'Delete']
 
 /** Rough half-size of a node card, so a dropped node lands centred on the cursor. */
@@ -80,9 +80,8 @@ export function Board({ nodes, edges, onNodesChange, onEdgesChange, onConnect, i
         fitViewOptions={FIT_VIEW_OPTIONS}
         minZoom={0.4}
         maxZoom={1.5}
-        colorMode="dark"
       >
-        <Background variant={BackgroundVariant.Lines} gap={24} color="rgba(255,255,255,0.07)" />
+        <Background variant={BackgroundVariant.Lines} gap={24} color="rgba(24,34,48,0.08)" bgColor="#e4e9f0" />
         <Controls showInteractive={false} />
         {children}
       </ReactFlow>
