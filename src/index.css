@@ -744,7 +744,7 @@ dialog::backdrop {
 
 .tray__badge {
   position: absolute;
-  top: -9px;
+  top: 8px;
   right: 10px;
   padding: 2px 8px;
   border-radius: 999px;
