@@ -2,12 +2,12 @@ import type { Level } from '../sim/types'
 
 export const level0: Level = {
   id: 0,
-  title: 'One page, one server',
+  title: 'Hacker News traffic',
   brief:
-    'Your landing page runs on one small web server. Tonight it gets featured somewhere big, and traffic will climb to 500 requests a second. Keep every component under 100%.',
+    'Someone posted your landing page to Hacker News. The whole site is one small web server, and traffic is about to climb to 500 requests a second. Keep every component under 100%.',
   targetQps: 500,
   budget: 150,
-  rampMs: 8000,
+  rampMs: 5000,
   palette: ['web', 'bigweb'],
   introduces: ['bigweb'],
   start: {
@@ -19,51 +19,36 @@ export const level0: Level = {
   },
   intro: [
     {
-      title: 'Your site is about to get popular',
+      title: 'Your site just hit the front page',
       body: [
-        "You're the only engineer at a tiny startup, and tonight the landing page gets featured somewhere big. Traffic will climb from nothing to 500 requests a second. Right now the whole site is one small web server.",
-        'Every component has a limit. When any one of them hits 100%, the site is down and the run stops right there. Your job: design something that holds, within budget.',
+        "You're the only engineer at a tiny startup, and someone just posted your landing page to Hacker News. Traffic will climb from nothing to 500 requests a second. Right now the whole site is one small web server.",
+        'The board is your architecture. The strip along the bottom is your cloud provider. The panel on the right has the brief, your budget, and the verdict after each run.',
       ],
-      note: "This sandbox is for building intuition about how systems behave under load. There's no lesson up front. You build, send traffic, watch something turn red, and work out why.",
-    },
-    {
-      target: 'board',
-      title: 'The board',
-      body: [
-        'Your architecture. Drag components around. Wire them by dragging from a right-hand port to the left-hand port of another. Select something and press Delete to remove it.',
-      ],
+      note: 'Every component has a max QPS. When any one of them hits 100%, the site is down and the run stops right there.',
     },
     {
       target: 'tray',
-      title: 'The tray',
+      title: 'Meet Bmazon Web Service',
       body: [
-        'Everything you can add to the board. Drag a piece up, or click it. Each one shows how many requests a second it can take, and what it costs.',
-      ],
-    },
-    {
-      target: 'new',
-      title: 'New this level',
-      body: [
-        "Each level unlocks one new component, and it's marked in the tray. Read the card: what it can take and what it costs is all you get.",
-      ],
-    },
-    {
-      target: 'panel',
-      title: 'The level panel',
-      body: [
-        'The brief, the target, and your budget. Anything that blocks a run shows up here, and so does the verdict when a run ends.',
+        'Everything you can rent. Each card shows the most requests a second that machine can take, and what it costs. Drag one onto the board, or click it. The card marked New is this level’s unlock.',
       ],
     },
     {
       target: 'hud',
       title: 'Send traffic',
-      body: [
-        'Ramps requests from zero to the target over a few seconds. Watch the utilization bars. If a component hits 100%, everything freezes so you can see what gave out.',
-      ],
+      body: ['Press Send traffic. Requests ramp from zero toward 500 a second. Keep an eye on the CPU meters.'],
+      advance: 'failed',
+      wait: 'This step finishes when the run does.',
     },
     {
-      title: 'Ready?',
-      body: ['Your first design is already wired up. Send traffic and see what happens.'],
+      target: 'new',
+      title: 'That was the site falling over',
+      body: [
+        'Web server 1 maxes out at 300 requests a second, and Hacker News is sending 500. Bmazon rents a bigger machine.',
+        'Select the small server and press Delete. Click the large web server to add it, wire Users to it, then send traffic again.',
+      ],
+      advance: 'passed',
+      wait: 'This step finishes when a run passes.',
     },
   ],
 }

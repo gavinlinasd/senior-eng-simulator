@@ -65,6 +65,13 @@ export interface IntroStep {
   body: string[]
   /** Small print under the body. */
   note?: string
+  /**
+   * Instead of a Next button, the step completes when a run ends this way.
+   * A pass always ends the walkthrough, whatever the current step.
+   */
+  advance?: 'failed' | 'passed'
+  /** Caption shown while waiting for `advance`. */
+  wait?: string
 }
 
 export interface Level {

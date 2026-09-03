@@ -3,12 +3,14 @@ import { passes } from '../sim/engine'
 import type { BreakingPoint, Level } from '../sim/types'
 import type { Phase } from './RunContext'
 
+export type Outcome = 'failed' | 'passed'
+
 /**
  * Ramps QPS linearly from 0 to the target over level.rampMs. Because the model
  * is linear the outcome is known up front: if the breaking point is at or
  * below the target, the ramp freezes there and the run fails.
  */
-export function useTrafficRun(level: Level, bp: BreakingPoint | null) {
+export function useTrafficRun(level: Level, bp: BreakingPoint | null, onOutcome?: (outcome: Outcome) => void) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [qps, setQps] = useState(0)
   const [failedNodeId, setFailedNodeId] = useState<string | null>(null)
@@ -35,17 +37,19 @@ export function useTrafficRun(level: Level, bp: BreakingPoint | null) {
         setQps(failAt.qps)
         setFailedNodeId(failAt.nodeId)
         setPhase('failed')
+        onOutcome?.('failed')
         return
       }
       setQps(q)
       if (t >= 1) {
         setPhase('passed')
+        onOutcome?.('passed')
         return
       }
       raf.current = requestAnimationFrame(tick)
     }
     raf.current = requestAnimationFrame(tick)
-  }, [bp, level, stop])
+  }, [bp, level, stop, onOutcome])
 
   const reset = useCallback(() => {
     stop()

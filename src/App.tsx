@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlowProvider,
   addEdge,
@@ -14,7 +14,7 @@ import { LEVELS } from './levels'
 import { CATALOGUE, costOf } from './sim/catalogue'
 import { breakingPoint, computeShares, evaluate } from './sim/engine'
 import { score as scoreOf } from './sim/score'
-import type { NodeType } from './sim/types'
+import type { IntroStep, NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
 import {
@@ -34,7 +34,7 @@ import { RunHud } from './ui/RunHud'
 import { SuccessModal } from './ui/SuccessModal'
 import { Tray } from './ui/Tray'
 import { Tutorial } from './ui/Tutorial'
-import { useTrafficRun } from './ui/useTrafficRun'
+import { useTrafficRun, type Outcome } from './ui/useTrafficRun'
 
 /** First grid slot (columns to the right of users, rows downward) not already occupied by a node. */
 function freeSlot(nodes: FlowNode[]): XYPosition {
@@ -51,9 +51,12 @@ function isStructural(changes: Array<NodeChange<FlowNode> | EdgeChange<FlowEdge>
   return changes.some((c) => c.type === 'add' || c.type === 'remove')
 }
 
-function showIntroFor(levelIndex: number) {
+const NO_STEPS: IntroStep[] = []
+
+/** Step to open a level's walkthrough at, or null if it has none or has been seen. */
+function tourStartFor(levelIndex: number): number | null {
   const level = LEVELS[levelIndex]
-  return Boolean(level.intro) && !introSeen(level.id)
+  return level.intro && !introSeen(level.id) ? 0 : null
 }
 
 function Game() {
@@ -77,20 +80,47 @@ function Game() {
   const spend = costOf(graph)
   const bp = useMemo(() => breakingPoint(graph, shares), [graph, shares])
 
-  const run = useTrafficRun(level, bp)
+  // ----- walkthrough -----
+  // Index of the current step, or null when closed. A ref mirrors it so run
+  // callbacks (which fire from animation frames) can read the latest value.
+  const [tourIndex, setTourIndexState] = useState<number | null>(() => tourStartFor(0))
+  const tourRef = useRef(tourIndex)
+  const setTourIndex = useCallback((i: number | null) => {
+    tourRef.current = i
+    setTourIndexState(i)
+  }, [])
+  const tourSteps = level.intro ?? NO_STEPS
+  const closeTour = useCallback(() => {
+    markIntroSeen(level.id)
+    setTourIndex(null)
+  }, [level.id, setTourIndex])
+  const tourNext = useCallback(() => {
+    const i = tourRef.current
+    if (i === null) return
+    if (i + 1 >= tourSteps.length) closeTour()
+    else setTourIndex(i + 1)
+  }, [tourSteps.length, closeTour, setTourIndex])
+  const tourBack = useCallback(() => {
+    const i = tourRef.current
+    if (i !== null && i > 0) setTourIndex(i - 1)
+  }, [setTourIndex])
+
+  const onOutcome = useCallback(
+    (outcome: Outcome) => {
+      const i = tourRef.current
+      if (i === null) return
+      if (outcome === 'passed') closeTour()
+      else if (tourSteps[i]?.advance === 'failed') tourNext()
+    },
+    [tourSteps, closeTour, tourNext],
+  )
+
+  const run = useTrafficRun(level, bp, onOutcome)
   const results = useMemo(() => evaluate(graph, shares, run.qps), [graph, shares, run.qps])
   const runState = useMemo<RunState>(
     () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId }),
     [run.phase, run.qps, results, run.failedNodeId],
   )
-
-  // ----- overlays -----
-  const [introOpen, setIntroOpen] = useState(() => showIntroFor(0))
-  const tourSteps = level.intro ?? LEVELS[0].intro ?? []
-  const closeIntro = useCallback(() => {
-    markIntroSeen(level.id)
-    setIntroOpen(false)
-  }, [level.id])
 
   // The pass modal shows once per run; dismissing it remembers which run was dismissed.
   const [dismissedRun, setDismissedRun] = useState(-1)
@@ -108,9 +138,9 @@ function Game() {
       setNodes(start.nodes)
       setEdges(start.edges)
       void fitView(FIT_VIEW_OPTIONS)
-      setIntroOpen(showIntroFor(index))
+      setTourIndex(tourStartFor(index))
     },
-    [reset, setNodes, setEdges, fitView],
+    [reset, setNodes, setEdges, fitView, setTourIndex],
   )
 
   const resetLevel = useCallback(() => loadLevel(levelIndex), [loadLevel, levelIndex])
@@ -220,12 +250,12 @@ function Game() {
           selectionLabel={selectionLabel}
           onRemoveSelected={removeSelected}
           onResetLevel={resetLevel}
-          onShowIntro={() => setIntroOpen(true)}
+          onShowIntro={level.intro ? () => setTourIndex(0) : undefined}
           hasNext={hasNext}
           onNext={nextLevel}
         />
       </div>
-      <Tutorial open={introOpen} steps={tourSteps} onClose={closeIntro} />
+      <Tutorial steps={tourSteps} index={tourIndex} onNext={tourNext} onBack={tourBack} onClose={closeTour} />
       <SuccessModal
         open={celebrating}
         level={level}

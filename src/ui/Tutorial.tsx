@@ -1,6 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { IntroStep, TourTarget } from '../sim/types'
-import { Modal } from './Modal'
 
 const TARGETS: Record<TourTarget, string> = {
   board: '.board',
@@ -53,28 +52,28 @@ function place(rect: Rect | null, card: { width: number; height: number }) {
 }
 
 interface TutorialProps {
-  open: boolean
   steps: IntroStep[]
+  /** Current step, or null when the walkthrough is closed. */
+  index: number | null
+  onNext: () => void
+  onBack: () => void
   onClose: () => void
 }
 
-/** Spotlight walkthrough. Steps are level data; this only knows how to point at parts of the UI. */
-export function Tutorial({ open, steps, onClose }: TutorialProps) {
-  const [index, setIndex] = useState(0)
+/**
+ * Guided walkthrough that spotlights part of the UI without blocking it, so a
+ * step can ask the player to do something. Steps are level data; this only
+ * knows how to point at parts of the page.
+ */
+export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProps) {
   const [rect, setRect] = useState<Rect | null>(null)
-  const [card, setCard] = useState({ width: 380, height: 200 })
+  const [card, setCard] = useState({ width: 400, height: 200 })
   const cardRef = useRef<HTMLDivElement>(null)
-  const step = steps[Math.min(index, steps.length - 1)]
-  const last = index >= steps.length - 1
+  const step = index === null ? null : steps[index]
+  const target = step?.target
 
-  const close = () => {
-    setIndex(0)
-    onClose()
-  }
-
-  const target = step.target
   useLayoutEffect(() => {
-    if (!open) return
+    if (!step) return
     const update = () => {
       setRect(target ? measure(target) : null)
       if (cardRef.current) {
@@ -84,20 +83,23 @@ export function Tutorial({ open, steps, onClose }: TutorialProps) {
     }
     update()
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [open, index, target])
+    const observer = new ResizeObserver(update)
+    const el = target ? document.querySelector(TARGETS[target]) : null
+    if (el) observer.observe(el)
+    return () => {
+      window.removeEventListener('resize', update)
+      observer.disconnect()
+    }
+  }, [step, target, index])
 
+  if (!step || index === null) return null
+  const last = index === steps.length - 1
   const pos = place(rect, card)
 
-  if (!step) return null
-
   return (
-    <Modal open={open} onClose={close} className="tour" labelledBy="tour-title">
+    <div className="tour" role="dialog" aria-labelledby="tour-title">
       {rect ? (
-        <div
-          className="tour__spot"
-          style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
-        />
+        <div className="tour__spot" style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }} />
       ) : (
         <div className="tour__dim" />
       )}
@@ -115,32 +117,28 @@ export function Tutorial({ open, steps, onClose }: TutorialProps) {
           {step.note && <p className="tour__about">{step.note}</p>}
         </div>
         <div className="tour__nav">
-          {!last && (
-            <button className="btn btn--muted" onClick={close}>
-              Skip
-            </button>
-          )}
+          <button className="btn btn--muted" onClick={onClose}>
+            Skip
+          </button>
           <div className="tour__dots" aria-hidden>
             {steps.map((s, i) => (
               <span key={s.title} className={i === index ? 'tour__dot is-current' : 'tour__dot'} />
             ))}
           </div>
           {index > 0 && (
-            <button className="btn" onClick={() => setIndex(index - 1)}>
+            <button className="btn" onClick={onBack}>
               Back
             </button>
           )}
-          {last ? (
-            <button className="btn btn--primary" onClick={close} autoFocus>
-              Let's go
-            </button>
+          {step.advance ? (
+            <span className="tour__wait">{step.wait ?? 'This step finishes when you do it.'}</span>
           ) : (
-            <button className="btn btn--primary" onClick={() => setIndex(index + 1)} autoFocus>
-              Next
+            <button key={index} className="btn btn--primary" onClick={last ? onClose : onNext} autoFocus>
+              {last ? 'Done' : 'Next'}
             </button>
           )}
         </div>
       </div>
-    </Modal>
+    </div>
   )
 }

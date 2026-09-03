@@ -70,7 +70,7 @@ button:focus-visible,
 
 .sim-node {
   --c: var(--traffic);
-  width: 200px;
+  width: 224px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -133,9 +133,6 @@ button:focus-visible,
 }
 
 .sim-node__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
   margin-top: 2px;
   font-size: 12px;
   color: var(--muted);
@@ -150,18 +147,40 @@ button:focus-visible,
   color: var(--c);
 }
 
-.sim-node__bar {
-  height: 6px;
+.cpu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 6px;
-  border-radius: 3px;
-  background: #d9dee5;
-  overflow: hidden;
 }
 
-.sim-node__fill {
-  height: 100%;
-  border-radius: 3px;
+.cpu__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.cpu__segments {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+}
+
+.cpu__segments span {
+  flex: 1;
+  height: 10px;
+  border-radius: 2px;
+  background: #d9dee5;
+}
+
+.cpu__segments span.is-lit {
   background: var(--c);
+}
+
+.cpu .sim-node__pct {
+  min-width: 36px;
+  text-align: right;
 }
 
 .sim-node__qps {
@@ -314,7 +333,26 @@ button:focus-visible,
   background: var(--panel);
 }
 
+.tray__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tray__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .tray__hint {
+  margin-left: auto;
   font-size: 12px;
   color: var(--muted);
 }
@@ -641,17 +679,8 @@ dialog::backdrop {
 .tour {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  background: transparent;
-  overflow: visible;
-}
-
-.tour::backdrop {
-  background: transparent;
+  z-index: 50;
+  pointer-events: none;
 }
 
 .tour__dim {
@@ -671,6 +700,7 @@ dialog::backdrop {
 .tour__card {
   position: absolute;
   width: 400px;
+  pointer-events: auto;
   max-width: calc(100vw - 32px);
   padding: 20px 22px;
   border-radius: 12px;
@@ -717,6 +747,12 @@ dialog::backdrop {
   flex: 1;
   justify-content: center;
   gap: 5px;
+}
+
+.tour__wait {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
 }
 
 .tour__dot {

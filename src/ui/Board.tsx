@@ -28,7 +28,7 @@ const connectionLineStyle = { stroke: 'white', strokeWidth: 2, strokeDasharray: 
 const deleteKeyCode = ['Backspace', 'Delete']
 
 /** Rough half-size of a node card, so a dropped node lands centred on the cursor. */
-const DROP_OFFSET = { x: 100, y: 34 }
+const DROP_OFFSET = { x: 110, y: 36 }
 
 interface BoardProps {
   nodes: FlowNode[]

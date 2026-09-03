@@ -1,4 +1,5 @@
 import type { DragEvent, KeyboardEvent } from 'react'
+import { Cloud } from 'lucide-react'
 import { CATALOGUE } from '../sim/catalogue'
 import type { NodeType } from '../sim/types'
 import { DRAG_MIME } from './flow'
@@ -12,12 +13,16 @@ interface TrayProps {
   onAdd: (type: NodeType) => void
 }
 
+/** The component tray, styled as the cloud provider's catalogue. */
 export function Tray({ palette, introduces, onAdd }: TrayProps) {
   return (
     <footer className="tray">
-      <div className="tray__hint">
-        Drag a component onto the board, or click it to add. Wire components by dragging from a right-hand port to a
-        left-hand port.
+      <div className="tray__header">
+        <span className="tray__brand">
+          <Cloud size={16} aria-hidden /> Bmazon Web Service
+        </span>
+        <span>Your cloud provider. Everything you can rent, with its max QPS and price.</span>
+        <span className="tray__hint">Drag onto the board or click to add. Wire from a right-hand port to a left-hand port.</span>
       </div>
       <div className="tray__items">
         {palette.map((type) => {
@@ -52,7 +57,7 @@ export function Tray({ palette, introduces, onAdd }: TrayProps) {
               <div>
                 <div className="tray__label">{spec.label}</div>
                 <div className="tray__meta">
-                  {fmt(spec.capacity)} QPS · ${spec.cost}
+                  Max {fmt(spec.capacity)} QPS · ${spec.cost}
                 </div>
                 <div className="tray__blurb">{spec.blurb}</div>
               </div>

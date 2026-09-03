@@ -2,12 +2,12 @@ import type { Level } from '../sim/types'
 
 export const level1: Level = {
   id: 1,
-  title: 'Going viral',
+  title: 'Twitter/X traffic',
   brief:
-    'It worked, and now the page is going viral. Traffic will climb to 1,000 requests a second. Keep every component under 100%.',
+    'It held, and now someone posted it on X. Traffic will climb to 1,000 requests a second. Keep every component under 100%.',
   targetQps: 1000,
   budget: 350,
-  rampMs: 8000,
+  rampMs: 5000,
   palette: ['lb', 'web', 'bigweb'],
   introduces: ['lb'],
   start: {
