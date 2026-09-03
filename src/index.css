@@ -468,6 +468,13 @@ button:focus-visible,
   text-shadow: 3px 3px 0 rgba(47, 111, 219, 0.18);
 }
 
+.brand__tagline {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--body);
+}
+
 .panel__eyebrow {
   font-size: 13px;
   color: var(--muted);
