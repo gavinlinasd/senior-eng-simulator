@@ -480,6 +480,27 @@ button:focus-visible,
   color: var(--muted);
 }
 
+.level-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.level-picker::after {
+  content: '▾';
+  font-size: 11px;
+}
+
+.level-picker select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .panel__title {
   margin: 4px 0 8px;
   font-size: 22px;

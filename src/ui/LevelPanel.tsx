@@ -1,3 +1,4 @@
+import { LEVELS } from '../levels'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, Score, Shares, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
@@ -20,6 +21,8 @@ interface LevelPanelProps {
   onShowIntro: () => void
   hasNext: boolean
   onNext: () => void
+  /** Jump straight to a level (fresh start board). */
+  onJump: (index: number) => void
 }
 
 export function LevelPanel({
@@ -37,6 +40,7 @@ export function LevelPanel({
   onShowIntro,
   hasNext,
   onNext,
+  onJump,
 }: LevelPanelProps) {
   return (
     <aside className="panel">
@@ -45,7 +49,22 @@ export function LevelPanel({
         <div className="brand__tagline">Learn how to design distributed systems!</div>
       </div>
       <div>
-        <div className="panel__eyebrow">Level {level.id}</div>
+        <div className="panel__eyebrow">
+          <label className="level-picker">
+            Level {level.id}
+            <select
+              aria-label="Jump to level"
+              value={LEVELS.indexOf(level)}
+              onChange={(e) => onJump(Number(e.target.value))}
+            >
+              {LEVELS.map((l, i) => (
+                <option key={l.id} value={i}>
+                  Level {l.id}: {l.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
         <h1 className="panel__title">{level.title}</h1>
         <p className="panel__brief">{level.brief}</p>
       </div>

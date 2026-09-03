@@ -251,6 +251,7 @@ function Game() {
           onShowIntro={() => setTourIndex(0)}
           hasNext={hasNext}
           onNext={nextLevel}
+          onJump={loadLevel}
         />
       </div>
       <Tutorial steps={tourSteps} index={tourIndex} onNext={tourNext} onBack={tourBack} onClose={closeTour} />
