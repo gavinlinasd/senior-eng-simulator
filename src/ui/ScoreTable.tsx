@@ -10,7 +10,7 @@ export function ScoreTable({ score }: { score: Score }) {
           <td>{score.base}</td>
         </tr>
         <tr>
-          <td>Headroom (peak {pct(score.peakUtil)}%)</td>
+          <td>Spare capacity, servers and database (peak {pct(score.peakUtil)}%)</td>
           <td>+{score.headroom}</td>
         </tr>
         <tr>

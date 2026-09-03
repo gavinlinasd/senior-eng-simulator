@@ -22,6 +22,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
   },
   web: {
     label: 'Web server',
+    scored: true,
     capacity: 300,
     cost: 50,
     distribute: 'fanout',
@@ -30,6 +31,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
   },
   bigweb: {
     label: 'Large web server',
+    scored: true,
     capacity: 600,
     cost: 120,
     distribute: 'fanout',
@@ -53,6 +55,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
   },
   db: {
     label: 'Database',
+    scored: true,
     capacity: 500,
     cost: 0,
     distribute: 'fanout',

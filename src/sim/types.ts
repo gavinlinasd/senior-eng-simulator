@@ -33,6 +33,8 @@ export interface NodeSpec {
   acceptsFrom?: { types: NodeType[]; reason: string }
   /** True if requests stop here: no outgoing wires. */
   sink?: boolean
+  /** Spare capacity on this type counts toward the score. */
+  scored?: boolean
 }
 
 export interface SimNode {
