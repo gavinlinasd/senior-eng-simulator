@@ -49,22 +49,7 @@ export function LevelPanel({
         <div className="brand__tagline">Learn how to design distributed systems!</div>
       </div>
       <div>
-        <div className="panel__eyebrow">
-          <label className="level-picker">
-            Level {level.id}
-            <select
-              aria-label="Jump to level"
-              value={LEVELS.indexOf(level)}
-              onChange={(e) => onJump(Number(e.target.value))}
-            >
-              {LEVELS.map((l, i) => (
-                <option key={l.id} value={i}>
-                  Level {l.id}: {l.title}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <div className="panel__eyebrow">Level {level.id}</div>
         <h1 className="panel__title">{level.title}</h1>
         <p className="panel__brief">{level.brief}</p>
       </div>
@@ -116,6 +101,18 @@ export function LevelPanel({
       )}
 
       <div className="panel__actions">
+        <select
+          className="btn btn--muted level-picker"
+          aria-label="Jump to level"
+          value={LEVELS.indexOf(level)}
+          onChange={(e) => onJump(Number(e.target.value))}
+        >
+          {LEVELS.map((l, i) => (
+            <option key={l.id} value={i}>
+              Level {l.id}: {l.title}
+            </option>
+          ))}
+        </select>
         {selectionLabel && (
           <button className="btn" onClick={onRemoveSelected}>
             Remove {selectionLabel}
