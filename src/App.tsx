@@ -17,7 +17,16 @@ import { score as scoreOf } from './sim/score'
 import type { NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
-import { fromLevel, makeFlowEdge, makeFlowNode, nextSeq, toGraph, type FlowEdge, type FlowNode } from './ui/flow'
+import {
+  FIT_VIEW_OPTIONS,
+  fromLevel,
+  makeFlowEdge,
+  makeFlowNode,
+  nextSeq,
+  toGraph,
+  type FlowEdge,
+  type FlowNode,
+} from './ui/flow'
 import { introSeen, markIntroSeen } from './ui/intro'
 import { LevelPanel } from './ui/LevelPanel'
 import { RunContext, type RunState } from './ui/RunContext'
@@ -42,12 +51,20 @@ function isStructural(changes: Array<NodeChange<FlowNode> | EdgeChange<FlowEdge>
   return changes.some((c) => c.type === 'add' || c.type === 'remove')
 }
 
+function showIntroFor(levelIndex: number) {
+  const level = LEVELS[levelIndex]
+  return Boolean(level.intro) && !introSeen(level.id)
+}
+
 function Game() {
-  const level = LEVELS[0]
-  const initial = useMemo(() => fromLevel(level.start), [level])
+  const [levelIndex, setLevelIndex] = useState(0)
+  const level = LEVELS[levelIndex]
+  const hasNext = levelIndex < LEVELS.length - 1
+
+  const [initial] = useState(() => fromLevel(level.start))
   const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>(initial.nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState<FlowEdge>(initial.edges)
-  const { deleteElements } = useReactFlow()
+  const { deleteElements, fitView } = useReactFlow()
 
   useEffect(() => {
     document.title = `Level ${level.id} · ${level.title}`
@@ -67,9 +84,41 @@ function Game() {
     [run.phase, run.qps, results, run.failedNodeId],
   )
 
-  // ----- editing -----
+  // ----- overlays -----
+  const [introOpen, setIntroOpen] = useState(() => showIntroFor(0))
+  const tourSteps = level.intro ?? LEVELS[0].intro ?? []
+  const closeIntro = useCallback(() => {
+    markIntroSeen(level.id)
+    setIntroOpen(false)
+  }, [level.id])
+
+  // The pass modal shows once per run; dismissing it remembers which run was dismissed.
+  const [dismissedRun, setDismissedRun] = useState(-1)
+  const celebrating = run.phase === 'passed' && dismissedRun !== run.runId
+  const closeCelebration = useCallback(() => setDismissedRun(run.runId), [run.runId])
+
+  // ----- levels -----
   const reset = run.reset
 
+  const loadLevel = useCallback(
+    (index: number) => {
+      const start = fromLevel(LEVELS[index].start)
+      reset()
+      setLevelIndex(index)
+      setNodes(start.nodes)
+      setEdges(start.edges)
+      void fitView(FIT_VIEW_OPTIONS)
+      setIntroOpen(showIntroFor(index))
+    },
+    [reset, setNodes, setEdges, fitView],
+  )
+
+  const resetLevel = useCallback(() => loadLevel(levelIndex), [loadLevel, levelIndex])
+  const nextLevel = useCallback(() => {
+    if (hasNext) loadLevel(levelIndex + 1)
+  }, [hasNext, loadLevel, levelIndex])
+
+  // ----- editing -----
   const handleNodesChange = useCallback(
     (changes: NodeChange<FlowNode>[]) => {
       if (isStructural(changes)) reset()
@@ -133,27 +182,9 @@ function Game() {
     })
   }, [deleteElements, selectedNode, selectedEdge])
 
-  const resetLevel = useCallback(() => {
-    reset()
-    setNodes(initial.nodes.map((n) => ({ ...n })))
-    setEdges(initial.edges.map((e) => ({ ...e })))
-  }, [reset, setNodes, setEdges, initial])
-
   // ----- verdict -----
   const failedNode = run.failedNodeId ? (graph.nodes.find((n) => n.id === run.failedNodeId) ?? null) : null
   const score = run.phase === 'passed' ? scoreOf(graph, shares, level) : null
-
-  // ----- overlays -----
-  const [introOpen, setIntroOpen] = useState(() => !introSeen())
-  const closeIntro = useCallback(() => {
-    markIntroSeen()
-    setIntroOpen(false)
-  }, [])
-
-  // The pass modal shows once per run; dismissing it remembers which run was dismissed.
-  const [dismissedRun, setDismissedRun] = useState(-1)
-  const celebrating = run.phase === 'passed' && dismissedRun !== run.runId
-  const closeCelebration = useCallback(() => setDismissedRun(run.runId), [run.runId])
 
   return (
     <RunContext.Provider value={runState}>
@@ -176,7 +207,7 @@ function Game() {
             onStop={reset}
           />
         </Board>
-        <Tray palette={level.palette} onAdd={addNode} />
+        <Tray palette={level.palette} introduces={level.introduces ?? []} onAdd={addNode} />
         <LevelPanel
           level={level}
           spend={spend}
@@ -190,10 +221,19 @@ function Game() {
           onRemoveSelected={removeSelected}
           onResetLevel={resetLevel}
           onShowIntro={() => setIntroOpen(true)}
+          hasNext={hasNext}
+          onNext={nextLevel}
         />
       </div>
-      <Tutorial open={introOpen} level={level} onClose={closeIntro} />
-      <SuccessModal open={celebrating} level={level} score={score} onClose={closeCelebration} />
+      <Tutorial open={introOpen} steps={tourSteps} onClose={closeIntro} />
+      <SuccessModal
+        open={celebrating}
+        level={level}
+        score={score}
+        hasNext={hasNext}
+        onNext={nextLevel}
+        onClose={closeCelebration}
+      />
     </RunContext.Provider>
   )
 }

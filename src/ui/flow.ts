@@ -9,6 +9,8 @@ export type FlowEdge = Edge
 
 export const DRAG_MIME = 'application/x-sim-node-type'
 
+export const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1 }
+
 export function makeFlowNode(id: string, type: NodeType, name: string, seq: number, position: XYPosition): FlowNode {
   return { id, type: 'sim', position, data: { simType: type, name, seq }, deletable: type !== 'users' }
 }

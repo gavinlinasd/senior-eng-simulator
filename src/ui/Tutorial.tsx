@@ -1,82 +1,13 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import type { Level } from '../sim/types'
-import { fmt } from './format'
+import { useLayoutEffect, useRef, useState } from 'react'
+import type { IntroStep, TourTarget } from '../sim/types'
 import { Modal } from './Modal'
 
-interface Step {
-  /** CSS selector of the area to spotlight. Omit for a centred card. */
-  target?: string
-  title: string
-  body: ReactNode
-}
-
-function stepsFor(level: Level): Step[] {
-  return [
-    {
-      title: 'Your site is about to get popular',
-      body: (
-        <>
-          <p>
-            You're the only engineer at a tiny startup, and tonight the landing page gets featured somewhere big.
-            Traffic will climb from nothing to {fmt(level.targetQps)} requests a second. Right now the whole site is
-            one web server.
-          </p>
-          <p>
-            Every component has a limit. When any one of them hits 100%, the site is down and the run stops right
-            there. Your job: design something that holds, within budget.
-          </p>
-          <p className="tour__about">
-            This sandbox is for building intuition about how systems behave under load. There's no lesson up front.
-            You build, send traffic, watch something turn red, and work out why.
-          </p>
-        </>
-      ),
-    },
-    {
-      target: '.board',
-      title: 'The board',
-      body: (
-        <p>
-          Your architecture. Drag components around. Wire them by dragging from a right-hand port to the left-hand port
-          of another. Select something and press Delete to remove it.
-        </p>
-      ),
-    },
-    {
-      target: '.tray',
-      title: 'The tray',
-      body: (
-        <p>
-          Everything you can add to the board. Drag a piece up, or click it. Each one shows how many requests a second
-          it can take, and what it costs.
-        </p>
-      ),
-    },
-    {
-      target: '.panel',
-      title: 'The level panel',
-      body: (
-        <p>
-          The brief, the target, and your budget. Anything that blocks a run shows up here, and so does the verdict when
-          a run ends.
-        </p>
-      ),
-    },
-    {
-      target: '.hud',
-      title: 'Send traffic',
-      body: (
-        <p>
-          Ramps requests from zero to the target over a few seconds. Watch the utilization bars. If a component hits
-          100%, everything freezes so you can see what gave out.
-        </p>
-      ),
-    },
-    {
-      title: 'Ready?',
-      body: <p>Your first design is already wired up. Send traffic and see what happens.</p>,
-    },
-  ]
+const TARGETS: Record<TourTarget, string> = {
+  board: '.board',
+  tray: '.tray',
+  panel: '.panel',
+  hud: '.hud',
+  new: '.tray__item.is-new',
 }
 
 const PAD = 8
@@ -90,8 +21,8 @@ interface Rect {
   height: number
 }
 
-function measure(selector: string): Rect | null {
-  const el = document.querySelector(selector)
+function measure(target: TourTarget): Rect | null {
+  const el = document.querySelector(TARGETS[target])
   if (!el) return null
   const r = el.getBoundingClientRect()
   return { left: r.left - PAD, top: r.top - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 }
@@ -123,18 +54,18 @@ function place(rect: Rect | null, card: { width: number; height: number }) {
 
 interface TutorialProps {
   open: boolean
-  level: Level
+  steps: IntroStep[]
   onClose: () => void
 }
 
-export function Tutorial({ open, level, onClose }: TutorialProps) {
-  const steps = stepsFor(level)
+/** Spotlight walkthrough. Steps are level data; this only knows how to point at parts of the UI. */
+export function Tutorial({ open, steps, onClose }: TutorialProps) {
   const [index, setIndex] = useState(0)
   const [rect, setRect] = useState<Rect | null>(null)
   const [card, setCard] = useState({ width: 380, height: 200 })
   const cardRef = useRef<HTMLDivElement>(null)
-  const step = steps[index]
-  const last = index === steps.length - 1
+  const step = steps[Math.min(index, steps.length - 1)]
+  const last = index >= steps.length - 1
 
   const close = () => {
     setIndex(0)
@@ -158,6 +89,8 @@ export function Tutorial({ open, level, onClose }: TutorialProps) {
 
   const pos = place(rect, card)
 
+  if (!step) return null
+
   return (
     <Modal open={open} onClose={close} className="tour" labelledBy="tour-title">
       {rect ? (
@@ -175,7 +108,12 @@ export function Tutorial({ open, level, onClose }: TutorialProps) {
         <h2 id="tour-title" className="tour__title">
           {step.title}
         </h2>
-        <div className="tour__body">{step.body}</div>
+        <div className="tour__body">
+          {step.body.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+          {step.note && <p className="tour__about">{step.note}</p>}
+        </div>
         <div className="tour__nav">
           {!last && (
             <button className="btn btn--muted" onClick={close}>

@@ -2,13 +2,14 @@ import type { Level } from '../sim/types'
 
 export const level1: Level = {
   id: 1,
-  title: 'Serve a static page',
+  title: 'Going viral',
   brief:
-    'A landing page is about to get a burst of attention. Keep every component under 100% while traffic climbs to the target.',
+    'It worked, and now the page is going viral. Traffic will climb to 1,000 requests a second. Keep every component under 100%.',
   targetQps: 1000,
   budget: 350,
   rampMs: 8000,
   palette: ['lb', 'web', 'bigweb'],
+  introduces: ['lb'],
   start: {
     nodes: [
       { id: 'users', type: 'users', name: 'Users', x: 80, y: 200 },

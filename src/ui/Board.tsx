@@ -13,7 +13,7 @@ import {
   type XYPosition,
 } from '@xyflow/react'
 import type { NodeType } from '../sim/types'
-import { DRAG_MIME, type FlowEdge, type FlowNode } from './flow'
+import { DRAG_MIME, FIT_VIEW_OPTIONS, type FlowEdge, type FlowNode } from './flow'
 import SimNode from './SimNode'
 import TrafficEdge from './TrafficEdge'
 
@@ -25,7 +25,6 @@ const defaultEdgeOptions = {
   markerEnd: { type: MarkerType.ArrowClosed, color: TRAFFIC, width: 16, height: 16 },
 }
 const connectionLineStyle = { stroke: 'white', strokeWidth: 2, strokeDasharray: '4 4' }
-const fitViewOptions = { padding: 0.4, maxZoom: 1 }
 const deleteKeyCode = ['Backspace', 'Delete']
 
 /** Rough half-size of a node card, so a dropped node lands centred on the cursor. */
@@ -78,7 +77,7 @@ export function Board({ nodes, edges, onNodesChange, onEdgesChange, onConnect, i
         connectionLineStyle={connectionLineStyle}
         deleteKeyCode={deleteKeyCode}
         fitView
-        fitViewOptions={fitViewOptions}
+        fitViewOptions={FIT_VIEW_OPTIONS}
         minZoom={0.4}
         maxZoom={1.5}
         colorMode="dark"

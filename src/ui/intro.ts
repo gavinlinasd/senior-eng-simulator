@@ -1,17 +1,17 @@
-const KEY = 'sandbox.introSeen'
+const key = (levelId: number) => `sandbox.introSeen.${levelId}`
 
-/** Whether the first-run intro has been dismissed before. Storage may be unavailable; default to showing it. */
-export function introSeen(): boolean {
+/** Whether a level's walkthrough has been dismissed before. Storage may be unavailable; default to showing it. */
+export function introSeen(levelId: number): boolean {
   try {
-    return localStorage.getItem(KEY) === '1'
+    return localStorage.getItem(key(levelId)) === '1'
   } catch {
     return false
   }
 }
 
-export function markIntroSeen() {
+export function markIntroSeen(levelId: number) {
   try {
-    localStorage.setItem(KEY, '1')
+    localStorage.setItem(key(levelId), '1')
   } catch {
     /* ignore */
   }

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { PartyPopper } from 'lucide-react'
 import type { Level, Score } from '../sim/types'
 import { fmt } from './format'
@@ -9,12 +8,12 @@ interface SuccessModalProps {
   open: boolean
   level: Level
   score: Score | null
+  hasNext: boolean
+  onNext: () => void
   onClose: () => void
 }
 
-export function SuccessModal({ open, level, score, onClose }: SuccessModalProps) {
-  const [nextNote, setNextNote] = useState(false)
-
+export function SuccessModal({ open, level, score, hasNext, onNext, onClose }: SuccessModalProps) {
   return (
     <Modal open={open} onClose={onClose} className="modal celebrate" labelledBy="celebrate-title">
       <div className="celebrate__icon">
@@ -33,11 +32,13 @@ export function SuccessModal({ open, level, score, onClose }: SuccessModalProps)
         <button className="btn" onClick={onClose}>
           Keep tinkering
         </button>
-        <button className="btn btn--ok" onClick={() => setNextNote(true)}>
-          Next level
-        </button>
+        {hasNext && (
+          <button className="btn btn--ok" onClick={onNext}>
+            Next level
+          </button>
+        )}
       </div>
-      {nextNote && <div className="verdict__note">Level 2 isn't built yet.</div>}
+      {!hasNext && <div className="verdict__note">That's the last level for now.</div>}
     </Modal>
   )
 }

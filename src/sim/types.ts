@@ -55,6 +55,18 @@ export interface BreakingPoint {
 
 export type Status = 'ok' | 'warn' | 'over'
 
+/** Areas of the UI a walkthrough step can spotlight. 'new' is the tray item badged as new this level. */
+export type TourTarget = 'board' | 'tray' | 'panel' | 'hud' | 'new'
+
+export interface IntroStep {
+  target?: TourTarget
+  title: string
+  /** Paragraphs. */
+  body: string[]
+  /** Small print under the body. */
+  note?: string
+}
+
 export interface Level {
   id: number
   title: string
@@ -64,8 +76,12 @@ export interface Level {
   rampMs: number
   /** Node types the player can add. */
   palette: NodeType[]
+  /** Node types unlocked by this level. Badged as new in the tray. */
+  introduces?: NodeType[]
   /** The initial architecture. */
   start: Graph
+  /** Walkthrough shown the first time the level is entered. */
+  intro?: IntroStep[]
 }
 
 export interface Score {

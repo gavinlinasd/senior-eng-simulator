@@ -7,10 +7,12 @@ import { ICONS } from './icons'
 
 interface TrayProps {
   palette: NodeType[]
+  /** Types unlocked by the current level, shown with a "New" badge. */
+  introduces: NodeType[]
   onAdd: (type: NodeType) => void
 }
 
-export function Tray({ palette, onAdd }: TrayProps) {
+export function Tray({ palette, introduces, onAdd }: TrayProps) {
   return (
     <footer className="tray">
       <div className="tray__hint">
@@ -21,6 +23,7 @@ export function Tray({ palette, onAdd }: TrayProps) {
         {palette.map((type) => {
           const spec = CATALOGUE[type]
           const Icon = ICONS[type]
+          const isNew = introduces.includes(type)
           const onDragStart = (e: DragEvent) => {
             e.dataTransfer.setData(DRAG_MIME, type)
             e.dataTransfer.effectAllowed = 'move'
@@ -34,7 +37,7 @@ export function Tray({ palette, onAdd }: TrayProps) {
           return (
             <div
               key={type}
-              className="tray__item"
+              className={isNew ? 'tray__item is-new' : 'tray__item'}
               role="button"
               tabIndex={0}
               draggable
@@ -42,6 +45,7 @@ export function Tray({ palette, onAdd }: TrayProps) {
               onClick={() => onAdd(type)}
               onKeyDown={onKeyDown}
             >
+              {isNew && <span className="tray__badge">New</span>}
               <div className="tray__icon">
                 <Icon size={24} aria-hidden />
               </div>

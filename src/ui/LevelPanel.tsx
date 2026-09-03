@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, Score, Shares, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
@@ -18,6 +17,8 @@ interface LevelPanelProps {
   onRemoveSelected: () => void
   onResetLevel: () => void
   onShowIntro: () => void
+  hasNext: boolean
+  onNext: () => void
 }
 
 export function LevelPanel({
@@ -33,9 +34,9 @@ export function LevelPanel({
   onRemoveSelected,
   onResetLevel,
   onShowIntro,
+  hasNext,
+  onNext,
 }: LevelPanelProps) {
-  const [nextNote, setNextNote] = useState(false)
-
   return (
     <aside className="panel">
       <div>
@@ -75,10 +76,13 @@ export function LevelPanel({
           <div className="verdict__title">Holding steady at {fmt(level.targetQps)} QPS</div>
           <div className="verdict__body">Nothing crossed 100%. This design serves the target load.</div>
           <ScoreTable score={score} />
-          <button className="btn btn--ok" onClick={() => setNextNote(true)}>
-            Next level
-          </button>
-          {nextNote && <div className="verdict__note">Level 2 isn't built yet.</div>}
+          {hasNext ? (
+            <button className="btn btn--ok" onClick={onNext}>
+              Next level
+            </button>
+          ) : (
+            <div className="verdict__note">That's the last level for now.</div>
+          )}
         </div>
       )}
 
