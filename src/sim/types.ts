@@ -56,6 +56,10 @@ export interface NodeSpec {
   scored?: boolean
   /** The app tier: nodes that actually handle requests and talk to the database. */
   serves?: boolean
+  /** Where traffic originates. Exactly one on every board; it can't be removed or wired into. */
+  source?: boolean
+  /** The system of record that the app tier must reach on levels that require a database. */
+  store?: boolean
 }
 
 export interface SimNode {

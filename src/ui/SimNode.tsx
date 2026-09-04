@@ -16,7 +16,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   const spec = CATALOGUE[data.simType]
   const Icon = ICONS[data.simType]
   const r = results[id] ?? { load: 0, public: 0, private: 0, write: 0, util: 0 }
-  const isUsers = data.simType === 'users'
+  const isUsers = Boolean(spec.source)
   const status = isUsers ? 'users' : statusOf(r.util)
   const className = [
     'sim-node',

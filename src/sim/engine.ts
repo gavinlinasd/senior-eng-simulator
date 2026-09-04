@@ -94,7 +94,7 @@ export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL
   const loads: Loads = {}
   for (const n of graph.nodes) loads[n.id] = zero()
   for (const n of graph.nodes) {
-    if (n.type === 'users') {
+    if (CATALOGUE[n.type].source) {
       loads[n.id] = { public: traffic.public * qps, private: traffic.private * qps, write: traffic.write * qps }
     }
   }

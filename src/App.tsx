@@ -225,7 +225,7 @@ function Game() {
     (c: Connection | FlowEdge) => {
       if (!c.source || !c.target || c.source === c.target) return false
       const target = nodes.find((n) => n.id === c.target)
-      if (!target || target.data.simType === 'users') return false
+      if (!target || CATALOGUE[target.data.simType].source) return false
       return !edges.some((e) => e.source === c.source && e.target === c.target)
     },
     [nodes, edges],

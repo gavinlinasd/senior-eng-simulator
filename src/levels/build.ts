@@ -36,7 +36,7 @@ const asItems = (tier: Tier): TierItem[] =>
 export function node(item: TierItem | NodeType, seq = 1, x = 0, y = 0): SimNode {
   const it = typeof item === 'string' ? { type: item } : item
   const spec = CATALOGUE[it.type]
-  const isUsers = it.type === 'users'
+  const isUsers = Boolean(spec.source)
   return {
     id: it.id ?? (isUsers ? 'users' : `${it.type}${seq}`),
     type: it.type,

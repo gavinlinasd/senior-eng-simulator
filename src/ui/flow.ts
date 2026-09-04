@@ -1,4 +1,5 @@
 import type { Edge, Node, XYPosition } from '@xyflow/react'
+import { CATALOGUE } from '../sim/catalogue'
 import type { Graph, NodeType } from '../sim/types'
 
 /** Bridge between React Flow's editing state and the pure sim graph. */
@@ -24,7 +25,7 @@ export function makeFlowNode(
     type: 'sim',
     position,
     data: { simType: type, name, seq, locked },
-    deletable: !locked && type !== 'users',
+    deletable: !locked && !CATALOGUE[type].source,
   }
 }
 

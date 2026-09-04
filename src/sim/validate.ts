@@ -9,7 +9,7 @@ export function validate(graph: Graph, level: Level): string[] {
   const acyclic = topoOrder(graph) !== null
   if (!acyclic) errors.push('Requests are going around in a loop. Remove the cycle.')
 
-  const userIds = new Set(graph.nodes.filter((n) => n.type === 'users').map((n) => n.id))
+  const userIds = new Set(graph.nodes.filter((n) => CATALOGUE[n.type].source).map((n) => n.id))
   const userOuts = graph.edges.filter((e) => userIds.has(e.from))
   if (userOuts.length === 0) errors.push("Users aren't connected to anything yet.")
   if (userOuts.length > 1) errors.push('Users only know one address. Connect them to exactly one component.')
@@ -32,7 +32,7 @@ export function validate(graph: Graph, level: Level): string[] {
     const results = evaluate(graph, level.targetQps, level.traffic ?? ALL_PUBLIC)
     for (const n of graph.nodes) {
       const outs = graph.edges.filter((e) => e.from === n.id && byId.has(e.to))
-      if (n.type !== 'users' && results[n.id].load === 0) {
+      if (!CATALOGUE[n.type].source && results[n.id].load === 0) {
         errors.push(`${n.name} isn't receiving any traffic. Connect it or remove it.`)
       }
       if (CATALOGUE[n.type].needsDownstream && outs.length === 0) {
@@ -44,7 +44,7 @@ export function validate(graph: Graph, level: Level): string[] {
       if (hasCache && !hasOnward) {
         errors.push(`Cache misses from ${n.name} have nowhere to go. Wire it onward as well.`)
       }
-      if (level.requiresDatabase && CATALOGUE[n.type].serves && !outs.some((e) => byId.get(e.to)!.type === 'db')) {
+      if (level.requiresDatabase && CATALOGUE[n.type].serves && !outs.some((e) => CATALOGUE[byId.get(e.to)!.type].store)) {
         errors.push(`${n.name} isn't wired to the database. Every request needs it.`)
       }
     }

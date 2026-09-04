@@ -9,6 +9,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     distribute: 'fanout',
     blurb: 'Where requests come from. They only know one address.',
     needsDownstream: false,
+    source: true,
   },
   lb: {
     label: 'Load balancer',
@@ -65,6 +66,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     needsDownstream: false,
     scored: true,
     sink: true,
+    store: true,
     acceptsFrom: { types: ['web', 'bigweb'], reason: 'Only the app talks to the database.' },
   },
 }
