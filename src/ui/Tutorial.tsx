@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { IntroStep, TourTarget } from '../sim/types'
+import type { ClassLoad, IntroStep, TourTarget } from '../sim/types'
+import { ComponentCard } from './ComponentCard'
 import { RichText } from './RichText'
+import { TrafficMixBar } from './TrafficMixBar'
 
 const TARGETS: Record<TourTarget, string> = {
   board: '.board',
@@ -55,6 +57,8 @@ function place(rect: Rect | null, card: { width: number; height: number }) {
 
 interface TutorialProps {
   steps: IntroStep[]
+  /** The level's traffic mix, for steps that show it. */
+  traffic?: ClassLoad
   /** Current step, or null when the walkthrough is closed. */
   index: number | null
   onNext: () => void
@@ -67,7 +71,7 @@ interface TutorialProps {
  * step can ask the player to do something. Steps are level data; this only
  * knows how to point at parts of the page.
  */
-export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProps) {
+export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: TutorialProps) {
   const [rect, setRect] = useState<Rect | null>(null)
   const [card, setCard] = useState({ width: 400, height: 200 })
   const cardRef = useRef<HTMLDivElement>(null)
@@ -111,7 +115,11 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
       ) : (
         !interactive && <div className="tour__dim" />
       )}
-      <div ref={cardRef} className={interactive ? 'tour__card tour__card--turn' : 'tour__card'} style={{ left: pos.left, top: pos.top }}>
+      <div
+        ref={cardRef}
+        className={['tour__card', interactive ? 'tour__card--turn' : '', single ? 'tour__card--single' : ''].join(' ')}
+        style={{ left: pos.left, top: pos.top }}
+      >
         {!single && (
           <div className="tour__step">
             {index + 1} of {steps.length}
@@ -132,6 +140,20 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
               <RichText text={step.note} />
             </p>
           )}
+          {step.showMix && traffic && (
+            <div className="tour__figure">
+              <div className="tour__caption">Traffic mix</div>
+              <TrafficMixBar traffic={traffic} />
+            </div>
+          )}
+          {step.cards?.map((type) => (
+            <div key={type} className="tour__figure">
+              <div className="tour__caption">New from Bmazon</div>
+              <div className="tray__item tray__item--static is-new">
+                <ComponentCard type={type} isNew />
+              </div>
+            </div>
+          ))}
         </div>
         <div className="tour__nav">
           {!single && (

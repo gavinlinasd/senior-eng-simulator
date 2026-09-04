@@ -278,7 +278,14 @@ function Game() {
           onOpenPicker={() => setPickerOpen(true)}
         />
       </div>
-      <Tutorial steps={tourSteps} index={tourIndex} onNext={tourNext} onBack={tourBack} onClose={closeTour} />
+      <Tutorial
+        steps={tourSteps}
+        traffic={level.traffic}
+        index={tourIndex}
+        onNext={tourNext}
+        onBack={tourBack}
+        onClose={closeTour}
+      />
       <LevelPickerModal
         open={pickerOpen}
         current={levelIndex}

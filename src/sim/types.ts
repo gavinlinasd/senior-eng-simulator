@@ -117,6 +117,10 @@ export interface IntroStep {
   advance?: 'failed' | 'passed'
   /** Caption shown while waiting for `advance`. */
   wait?: string
+  /** Show the level's traffic mix as a bar. */
+  showMix?: boolean
+  /** Component cards to show, as they appear in the tray. */
+  cards?: NodeType[]
 }
 
 export interface Level {

@@ -1082,3 +1082,79 @@ dialog::backdrop {
   font-size: 12px;
   color: var(--muted);
 }
+
+/* ---------- intro figures ---------- */
+
+.tour__card--single {
+  width: 500px;
+}
+
+.tour__figure {
+  margin-top: 12px;
+}
+
+.tour__caption {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tray__item--static {
+  width: auto;
+  max-width: none;
+  cursor: default;
+}
+
+.tray__item--static:hover {
+  border-color: var(--accent);
+}
+
+/* traffic mix bar */
+
+.mix__bar {
+  display: flex;
+  height: 14px;
+  gap: 2px;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.mix__seg {
+  flex-basis: 0;
+}
+
+.mix__seg--public {
+  background: #2f6fdb;
+}
+
+.mix__seg--private {
+  background: #7c5cbf;
+}
+
+.mix__seg--write {
+  background: #2a9d8f;
+}
+
+.mix__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--body);
+}
+
+.mix__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mix__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}

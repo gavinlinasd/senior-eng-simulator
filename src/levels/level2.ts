@@ -38,11 +38,11 @@ export const level2: Level = {
     {
       title: 'Reddit found you',
       body: [
-        'The landing page grew into an app. People have accounts and post comments, so every request now needs the database. Someone just posted it to Reddit, and traffic will climb to 1,500 requests a second on a $650 budget.',
-        '40% of requests are **public** pages, 50% are **private** reads like someone’s own feed, and 10% are **writes**. They flow through the system differently, and the board now shows all three.',
-        '**The database** is already on the board, wired from every web server. Bmazon won’t sell you a bigger one, and you can’t remove it.',
-        '**New from Bmazon: Cache.** Cache-aside, Redis style. Attach it to a web server and the server checks it first for reads. Attach it to the load balancer and it answers public pages before they reach your servers. Either way, misses and writes carry on, and the more lookups a cache sees, the better it hits.',
+        'The app has accounts and comments now, so every request needs the database. Someone posted it to Reddit: 1,500 requests a second on a $650 budget.',
+        'The database is already on the board, wired from every web server. It can’t be scaled or removed.',
       ],
+      showMix: true,
+      cards: ['cache'],
     },
   ],
   lesson: {
