@@ -161,6 +161,8 @@ export interface Level {
   stars: { three: number; two: number }
   /** Every request needs the database: each app-tier node must be wired to one. */
   requiresDatabase?: boolean
+  /** Progressive hints, gentlest first, revealed one at a time on request. */
+  hints?: string[]
 }
 
 export interface Score {

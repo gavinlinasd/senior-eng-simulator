@@ -142,6 +142,7 @@ function Game() {
 
   // ----- levels -----
   const reset = run.reset
+  const [hintsShown, setHintsShown] = useState(0)
 
   const enterLevel = useCallback(
     (index: number, board: Graph, withIntro: boolean) => {
@@ -153,6 +154,7 @@ function Game() {
       setEdges(start.edges)
       void fitView(FIT_VIEW_OPTIONS)
       setTourIndex(withIntro ? tourStartFor(index) : null)
+      if (withIntro) setHintsShown(0)
     },
     [reset, setNodes, setEdges, fitView, setTourIndex],
   )
@@ -276,6 +278,8 @@ function Game() {
           hasNext={hasNext}
           onNext={nextLevel}
           onOpenPicker={() => setPickerOpen(true)}
+          hintsShown={hintsShown}
+          onHint={() => setHintsShown((n) => n + 1)}
         />
       </div>
       <Tutorial

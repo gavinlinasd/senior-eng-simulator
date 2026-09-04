@@ -8,6 +8,11 @@ export const level1: Level = {
   targetQps: 1000,
   budget: 340,
   rampMs: 5000,
+  hints: [
+    'Users only know one address. A second server next to the first one changes nothing until something can spread requests across them.',
+    'The load balancer is that one address. Put it between Users and the servers, then wire several servers behind it.',
+    'Four small servers behind the balancer share 1,000 requests a second at 250 each. Check the budget before adding a fifth.',
+  ],
   stars: { three: 200, two: 130 },
   palette: ['lb', 'web', 'bigweb'],
   introduces: ['lb'],

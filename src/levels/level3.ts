@@ -33,6 +33,11 @@ export const level3: Level = {
   targetQps: 3000,
   budget: 850,
   rampMs: 5000,
+  hints: [
+    'Half the traffic is **public** pages that need no sign-in. Something could answer those before they ever reach a web server.',
+    'A cache’s hit rate depends on how many lookups it sees. One shared cache warms up; several small ones stay cold.',
+    'Try a cache on the load balancer, then read the hit-rate split on its card. What it can and can’t serve tells you where the rest has to go.',
+  ],
   stars: { three: 500, two: 350 },
   requiresDatabase: true,
   traffic: { public: 0.5, private: 0.4, write: 0.1 },

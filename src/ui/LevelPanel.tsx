@@ -1,7 +1,9 @@
+import { Lightbulb } from 'lucide-react'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, NodeResult, Score, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
 import { Lesson } from './Lesson'
+import { RichText } from './RichText'
 import type { Phase } from './RunContext'
 import { ScoreTable } from './ScoreTable'
 import { Stars } from './Stars'
@@ -23,6 +25,9 @@ interface LevelPanelProps {
   hasNext: boolean
   onNext: () => void
   onOpenPicker: () => void
+  /** How many of the level's hints have been revealed. */
+  hintsShown: number
+  onHint: () => void
 }
 
 export function LevelPanel({
@@ -41,7 +46,10 @@ export function LevelPanel({
   hasNext,
   onNext,
   onOpenPicker,
+  hintsShown,
+  onHint,
 }: LevelPanelProps) {
+  const hints = level.hints ?? []
   const showClasses = (level.traffic?.private ?? 0) > 0 || (level.traffic?.write ?? 0) > 0
   return (
     <aside className="panel">
@@ -107,6 +115,27 @@ export function LevelPanel({
 
       {phase === 'idle' && errors.length === 0 && (
         <p className="panel__hint">Send traffic and watch every component as it climbs to {fmt(level.targetQps)} QPS.</p>
+      )}
+
+      {hints.length > 0 && phase !== 'passed' && (
+        <div className="hints">
+          {hints.slice(0, hintsShown).map((hint, i) => (
+            <div key={hint} className="hints__item">
+              <Lightbulb size={14} aria-hidden />
+              <span>
+                <span className="hints__n">Hint {i + 1}.</span> <RichText text={hint} />
+              </span>
+            </div>
+          ))}
+          {hintsShown < hints.length && (
+            <button className="btn hints__button" onClick={onHint}>
+              <Lightbulb size={14} aria-hidden /> {hintsShown === 0 ? 'Need a hint?' : 'Another hint'}
+              <span className="hints__count">
+                {hintsShown}/{hints.length}
+              </span>
+            </button>
+          )}
+        </div>
       )}
 
       <div className="panel__actions">

@@ -8,6 +8,10 @@ export const level0: Level = {
   targetQps: 500,
   budget: 150,
   rampMs: 5000,
+  hints: [
+    'Look at the max QPS on each card in the tray. One of them can take 500 requests a second on its own.',
+    'Remove the small server (hover it and click the ×), add the large one, and wire Users to it.',
+  ],
   stars: { three: 140, two: 100 },
   palette: ['web', 'bigweb'],
   introduces: ['bigweb'],

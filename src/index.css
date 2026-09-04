@@ -1158,3 +1158,47 @@ dialog::backdrop {
   height: 9px;
   border-radius: 50%;
 }
+
+/* ---------- hints ---------- */
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hints__item {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #f0d9a6;
+  border-radius: 8px;
+  background: #fff8e6;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.hints__item svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--warn);
+}
+
+.hints__n {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hints__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+}
+
+.hints__count {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}

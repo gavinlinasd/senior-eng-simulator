@@ -10,6 +10,11 @@ export const level2: Level = {
   targetQps: 1500,
   budget: 650,
   rampMs: 5000,
+  hints: [
+    'Watch which card turns red first. The database receives everything the web servers receive, however many servers there are.',
+    'Look at the traffic mix in the HUD. Reads can be answered from a cache; writes can’t. Most of this traffic is reads.',
+    'Attach a cache to each web server and keep the database wire. Reads mostly stop at the cache; misses and writes still go through.',
+  ],
   stars: { three: 450, two: 300 },
   requiresDatabase: true,
   traffic: { public: 0.4, private: 0.5, write: 0.1 },
