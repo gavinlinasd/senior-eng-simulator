@@ -127,16 +127,30 @@ describe('cache-aside with a load-dependent hit rate', () => {
     expect(r.db1.write).toBe(100)
   })
 
-  it('a cache on the load balancer serves only public reads', () => {
+  it('a cache on the load balancer sees every read but can only answer the public ones', () => {
     const g = behindLb('web', 'web')
     g.nodes.push(node('cache', 'edge'), node('db', 'db1'))
     g.edges.push(edge('lb1', 'edge'), edge('web1', 'db1'), edge('web2', 'db1'))
     const r = evaluate(g, 1000, MIX)
-    expect(r.edge).toMatchObject({ public: 400, private: 0, write: 0, load: 400 })
-    const miss = 1 - hitRate(curve, 400)
+    // all 900 reads are lookups; the curve only counts the 400 it may serve
+    expect(r.edge).toMatchObject({ public: 400, private: 500, write: 0, load: 900 })
+    const h = hitRate(curve, 400)
+    expect(r.edge.hitRates).toEqual({ public: h, private: 0 })
+    expect(r.edge.hitRate).toBeCloseTo((400 * h) / 900, 10)
+    const miss = 1 - h
     expect(r.web1.public).toBeCloseTo((400 * miss) / 2, 6)
     expect(r.web1.private).toBe(250)
     expect(r.web1.write).toBe(50)
+  })
+
+  it('a cache on a web server answers both read classes at the same rate', () => {
+    const g = chain('web', 'db')
+    g.nodes.push(node('cache', 'cache1'))
+    g.edges.push(edge('web1', 'cache1'))
+    const r = evaluate(g, 1000, MIX)
+    const h = hitRate(curve, 900)
+    expect(r.cache1.hitRates).toEqual({ public: h, private: h })
+    expect(r.cache1.hitRate).toBeCloseTo(h, 10)
   })
 
   it('one shared cache warms up more than one cache per server', () => {

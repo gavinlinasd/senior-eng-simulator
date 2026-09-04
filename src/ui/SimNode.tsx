@@ -29,7 +29,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
     <div className="sim-node__classes">
       {isCache ? (
         <>
-          {fmt(r.public)} pub · {fmt(r.private)} priv
+          hit pub {pct(r.hitRates?.public ?? 0)}% · priv {pct(r.hitRates?.private ?? 0)}%
         </>
       ) : (
         <>

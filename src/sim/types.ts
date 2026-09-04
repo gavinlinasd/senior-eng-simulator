@@ -40,9 +40,10 @@ export interface NodeSpec {
   /** Validation error if this node has no outgoing edges. */
   needsDownstream: boolean
   /**
-   * Makes this a cache-aside cache. Nodes wired into it send it their reads
-   * as lookups; the hit rate depends on the total lookups it sees, and hits
-   * never flow down the upstream node's other wires.
+   * Makes this a cache-aside cache. Nodes wired into it send it all their
+   * reads as lookups; it can only answer the classes its feeder is allowed to
+   * cache, the hit rate depends on the lookups it can serve, and hits never
+   * flow down the feeder's other wires.
    */
   hitCurve?: HitCurve
   /** Which classes a cache attached to this node type is allowed to serve. */
@@ -84,8 +85,10 @@ export interface NodeResult extends ClassLoad {
   /** Total requests per second. For a cache, its lookups. */
   load: number
   util: number
-  /** Caches only: fraction of lookups answered at this load. */
+  /** Caches only: fraction of all lookups answered at this load. */
   hitRate?: number
+  /** Caches only: hit rate per read class. A class the cache can't serve from where it sits reads 0. */
+  hitRates?: { public: number; private: number }
 }
 
 export type Evaluation = Record<string, NodeResult>

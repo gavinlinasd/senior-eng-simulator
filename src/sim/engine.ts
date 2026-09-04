@@ -49,10 +49,17 @@ export function hitRate(curve: HitCurve, lookups: number): number {
   return Math.min(curve.max, Math.max(0, h))
 }
 
+export interface CacheStats {
+  /** Fraction of all lookups answered. */
+  rate: number
+  /** Fraction of each read class answered. */
+  rates: { public: number; private: number }
+}
+
 export interface LoadResult {
   loads: Loads
-  /** Hit rate of each cache at this load. */
-  hits: Record<string, number>
+  /** Per cache: how well it served at this load. */
+  caches: Record<string, CacheStats>
 }
 
 /**
@@ -92,7 +99,10 @@ export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL
     }
   }
 
-  const hits: Record<string, number> = {}
+  // Per cache: the lookups it is allowed to answer, the resulting hit rate, and hits per class.
+  const servable: Record<string, { public: number; private: number }> = {}
+  const hitOf: Record<string, number> = {}
+  const caches: Record<string, CacheStats> = {}
   // Feeders waiting on caches: how many of their caches are unresolved, and what to do once none are.
   const pending = new Map<string, { remaining: number; flush: () => void }>()
   const waitingOn = new Map<string, string[]>()
@@ -105,7 +115,18 @@ export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL
   for (const id of walk) {
     const node = byId.get(id)!
     if (isCache(id)) {
-      hits[id] = hitRate(CATALOGUE[node.type].hitCurve!, reads(loads[id]))
+      const can = servable[id] ?? { public: 0, private: 0 }
+      const h = hitRate(CATALOGUE[node.type].hitCurve!, can.public + can.private)
+      hitOf[id] = h
+      const got = loads[id]
+      const served = can.public * h + can.private * h
+      caches[id] = {
+        rate: reads(got) > 0 ? served / reads(got) : 0,
+        rates: {
+          public: got.public > 0 ? (can.public * h) / got.public : 0,
+          private: got.private > 0 ? (can.private * h) / got.private : 0,
+        },
+      }
       for (const feeder of waitingOn.get(id) ?? []) {
         const p = pending.get(feeder)!
         if (--p.remaining === 0) p.flush()
@@ -124,14 +145,19 @@ export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL
 
     const cacheable = CATALOGUE[node.type].cacheable ?? []
     for (const e of cacheOuts) {
-      for (const cls of cacheable) loads[e.to][cls] += arrived[cls]
+      // Every read is a lookup, but the cache can only answer what this feeder may cache.
+      loads[e.to].public += arrived.public
+      loads[e.to].private += arrived.private
+      const can = (servable[e.to] ??= { public: 0, private: 0 })
+      if (cacheable.includes('public')) can.public += arrived.public
+      if (cacheable.includes('private')) can.private += arrived.private
       waitingOn.set(e.to, [...(waitingOn.get(e.to) ?? []), id])
     }
     pending.set(id, {
       remaining: cacheOuts.length,
       flush: () => {
         if (!onward.length) return
-        const best = Math.max(...cacheOuts.map((e) => hits[e.to]))
+        const best = Math.max(...cacheOuts.map((e) => hitOf[e.to]))
         const left = { ...arrived }
         for (const cls of cacheable) left[cls] = arrived[cls] * (1 - best)
         distribute(id, left, onward)
@@ -139,20 +165,23 @@ export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL
     })
   }
 
-  return { loads, hits }
+  return { loads, caches }
 }
 
 /** Load and utilization of every node at a given QPS. Empty loads (a cycle) evaluate to zero everywhere. */
 export function evaluate(graph: Graph, qps: number, traffic: ClassLoad = ALL_PUBLIC): Evaluation {
   const result = computeLoads(graph, qps, traffic)
-  const hits = result?.hits ?? {}
+  const caches = result?.caches ?? {}
   const out: Evaluation = {}
   for (const n of graph.nodes) {
     const c = result?.loads[n.id] ?? zero()
     const load = total(c)
     const cap = CATALOGUE[n.type].capacity
     out[n.id] = { ...c, load, util: Number.isFinite(cap) ? load / cap : 0 }
-    if (n.id in hits) out[n.id].hitRate = hits[n.id]
+    if (n.id in caches) {
+      out[n.id].hitRate = caches[n.id].rate
+      out[n.id].hitRates = caches[n.id].rates
+    }
   }
   return out
 }
