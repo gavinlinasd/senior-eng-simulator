@@ -1286,14 +1286,6 @@ dialog::backdrop {
   max-width: 640px;
 }
 
-.start__eyebrow {
-  margin-bottom: 22px;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: rgba(142, 197, 255, 0.7);
-}
-
 .start__title {
   margin: 0;
   font-family: 'Press Start 2P', 'Courier New', monospace;
@@ -1314,19 +1306,11 @@ dialog::backdrop {
   color: #ffd166;
 }
 
-.start__goal {
-  max-width: 520px;
-  margin: 26px auto 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .start__button {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-top: 34px;
+  margin-top: 40px;
   padding: 18px 30px;
   border: 3px solid #8ec5ff;
   border-radius: 6px;
@@ -1349,12 +1333,6 @@ dialog::backdrop {
 .start__button:active {
   transform: translateY(6px);
   box-shadow: none;
-}
-
-.start__meta {
-  margin-top: 26px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 @keyframes start-blink {
