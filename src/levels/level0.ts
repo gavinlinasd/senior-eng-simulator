@@ -52,7 +52,7 @@ export const level0 = defineLevel({
     },
   ],
   lesson: {
-    title: 'You just did vertical scaling',
-    body: 'One machine couldn’t keep up, so you swapped it for a bigger one. That’s **vertical scaling**: more capacity per box. It’s the simplest fix, and it runs out fast, because boxes only get so big and the price climbs faster than the capacity.',
+    title: 'You just did **vertical scaling**',
+    body: 'One machine couldn’t keep up, so you swapped it for a bigger one. That’s **vertical scaling**: more capacity per box. It’s the simplest fix, and **it runs out fast**, because boxes only get so big and the price climbs faster than the capacity.',
   },
 })

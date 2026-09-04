@@ -34,7 +34,7 @@ export const level3 = defineLevel({
     'Try a cache on the load balancer, then read the hit-rate split on its card. What it can and can’t serve tells you where the rest has to go.',
   ],
   lesson: {
-    title: 'Where a cache sits decides what it can serve',
-    body: 'A cache on the load balancer never sees who is asking, so it can only serve **public** pages, but it serves them before they touch a web server. A cache behind the app sees signed-in requests and serves **private** reads too. And every cache gets better the more lookups it sees, so one shared cache beats a handful of small ones.',
+    title: '**Where a cache sits** decides what it can serve',
+    body: 'A cache on the load balancer never sees who is asking, so it can only serve **public** pages, but it serves them before they touch a web server. A cache behind the app sees signed-in requests and serves **private** reads too. And every cache gets better the more lookups it sees, so **one shared cache beats a handful of small ones**.',
   },
 })

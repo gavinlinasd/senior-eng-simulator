@@ -43,7 +43,7 @@ export const level2 = defineLevel({
     },
   ],
   lesson: {
-    title: 'You just added a read cache',
-    body: 'Most traffic was reads of the same data, so a **cache-aside** cache answered them from memory and the database only saw misses and writes. The database is usually the thing that falls over, because it’s the one part you can’t just add more of. A cache on the load balancer only ever serves public pages, since it never sees who’s asking, so private reads still need a cache behind the app.',
+    title: 'You just added a **read cache**',
+    body: 'Most traffic was reads of the same data, so a **cache-aside** cache answered them from memory and the database only saw **misses and writes**. **The database is usually the thing that falls over**, because it’s the one part you can’t just add more of. A cache on the load balancer only ever serves public pages, since it never sees who’s asking, so private reads still need a cache behind the app.',
   },
 })

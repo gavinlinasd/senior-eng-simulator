@@ -846,11 +846,25 @@ dialog::backdrop {
   color: var(--accent);
 }
 
+.lesson__title strong {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 .lesson__body {
   margin: 6px 0 0;
   font-size: 13px;
   line-height: 1.5;
   color: var(--body);
+}
+
+/* the takeaways */
+.lesson__body strong {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(47, 111, 219, 0.14);
+  color: var(--ink);
 }
 
 .celebrate__tip {

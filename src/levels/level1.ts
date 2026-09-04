@@ -20,7 +20,7 @@ export const level1 = defineLevel({
     'Four small servers behind the balancer share 1,000 requests a second at 250 each. Check the budget before adding a fifth.',
   ],
   lesson: {
-    title: 'You just did horizontal scaling',
-    body: 'No single box could serve 1,000 requests a second, so you put a **load balancer** in front and spread the work across several. That’s **horizontal scaling**: more boxes instead of a bigger box. The load balancer gives users one address, and round robin decides which box serves each request. More than one design passes this level. Try a mix of large and small boxes behind the balancer, watch which one gives out first, and compare scores.',
+    title: 'You just did **horizontal scaling**',
+    body: 'No single box could serve 1,000 requests a second, so you put a **load balancer** in front and spread the work across several. That’s **horizontal scaling**: more boxes instead of a bigger box. The load balancer gives users **one address**, and **round robin** decides which box serves each request. More than one design passes this level. Try a mix of large and small boxes behind the balancer, watch which one gives out first, and compare scores.',
   },
 })
