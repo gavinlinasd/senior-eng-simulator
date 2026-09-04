@@ -1,91 +1,75 @@
 import { describe, expect, it } from 'vitest'
 import { LEVELS } from './index'
-import { level0 } from './level0'
-import { level3 } from './level3'
-import { ALL_PUBLIC, breakingPoint, passes, peakUtilization } from '../sim/engine'
-import { validate } from '../sim/validate'
+import { board, node } from './build'
+import { ALL_PUBLIC, breakingPoint } from '../sim/engine'
 import { score } from '../sim/score'
-import { chain, edge, node } from '../sim/fixtures'
+import { validate } from '../sim/validate'
 import { costOf } from '../sim/catalogue'
-import type { Graph } from '../sim/types'
 
-describe('levels', () => {
-  it('are ordered by id and every start graph is valid', () => {
+describe('board builder', () => {
+  it('names nodes per type, wires adjacent columns all-to-all, and skips sinks as feeders', () => {
+    const g = board('users', 'lb', { type: 'web', count: 2 }, ['cache', { type: 'db', id: 'db', locked: true }])
+    expect(g.nodes.map((n) => n.id)).toEqual(['users', 'lb1', 'web1', 'web2', 'cache1', 'db'])
+    expect(g.nodes.find((n) => n.id === 'web2')?.name).toBe('Web server 2')
+    expect(g.nodes.find((n) => n.id === 'db')?.locked).toBe(true)
+    expect(g.edges.map((e) => e.id).sort()).toEqual(
+      ['users->lb1', 'lb1->web1', 'lb1->web2', 'web1->cache1', 'web2->cache1', 'web1->db', 'web2->db'].sort(),
+    )
+    const xs = new Set(g.nodes.map((n) => n.x))
+    expect(xs.size).toBe(4)
+  })
+
+  it('lets an item name its own feeders', () => {
+    const g = board('users', 'lb', [{ type: 'web' }, { type: 'cache', id: 'edge', from: ['lb1'] }], 'db')
+    expect(g.edges.map((e) => e.id)).toContain('lb1->edge')
+    expect(g.edges.map((e) => e.id)).not.toContain('edge->db1')
+    expect(node('db').name).toBe('Database 1')
+  })
+})
+
+describe('every level', () => {
+  it('is ordered by id, valid, and offers the previous tools plus its unlocks', () => {
     expect(LEVELS.map((l) => l.id)).toEqual([0, 1, 2, 3])
-    for (const level of LEVELS) {
+    LEVELS.forEach((level, i) => {
       expect(validate(level.start, level)).toEqual([])
       for (const t of level.introduces ?? []) expect(level.palette).toContain(t)
+      if (i > 0) for (const t of LEVELS[i - 1].palette) expect(level.palette).toContain(t)
       for (const id of Object.keys(level.carryOver?.wireFrom ?? {})) {
         expect(level.carryOver?.add.map((n) => n.id)).toContain(id)
       }
       if (level.traffic) expect(level.traffic.public + level.traffic.private + level.traffic.write).toBeCloseTo(1, 10)
       expect(level.stars.three).toBeGreaterThan(level.stars.two)
       expect(level.stars.two).toBeGreaterThan(0)
+    })
+  })
+
+  it.each(LEVELS.map((l) => [l.id, l] as const))('level %i: the start board fails', (_, level) => {
+    expect(score(level.start, level)).toBeNull()
+  })
+
+  it.each(LEVELS.map((l) => [l.id, l] as const))('level %i: every solution passes within budget, one with three stars', (_, level) => {
+    expect(level.solutions.length).toBeGreaterThan(0)
+    let best = 0
+    for (const g of level.solutions) {
+      expect(validate(g, level)).toEqual([])
+      expect(costOf(g)).toBeLessThanOrEqual(level.budget)
+      const s = score(g, level)
+      expect(s).not.toBeNull()
+      best = Math.max(best, s!.stars)
     }
+    expect(best).toBe(3)
   })
 
-  it('level 0 starts on one small server that breaks at 300', () => {
-    expect(breakingPoint(level0.start, ALL_PUBLIC, 10_000)).toEqual({ qps: 300, nodeId: 'web1' })
-  })
-
-  it('level 0 passes with one large server at 83%', () => {
-    const g = chain('bigweb')
-    expect(validate(g, level0)).toEqual([])
-    expect(passes(breakingPoint(g, ALL_PUBLIC, level0.targetQps), level0.targetQps)).toBe(true)
-    expect(peakUtilization(g, level0.targetQps, ALL_PUBLIC)).toBeCloseTo(0.8333, 3)
+  it.each(LEVELS.map((l) => [l.id, l] as const))('level %i: every trap fails', (_, level) => {
+    for (const g of level.traps) {
+      const blocked = validate(g, level).length > 0
+      expect(blocked || score(g, level) === null).toBe(true)
+    }
   })
 })
 
-describe('level 3 has solutions and traps', () => {
-  const clone = (g: Graph): Graph => ({ nodes: g.nodes.map((n) => ({ ...n })), edges: g.edges.map((e) => ({ ...e })) })
-  const passesLevel = (g: Graph) => validate(g, level3).length === 0 && score(g, level3) !== null
-
-  it('the start board (the level 2 solution) is not enough', () => {
-    expect(validate(level3.start, level3)).toEqual([])
-    expect(score(level3.start, level3)).toBeNull()
-  })
-
-  it('edge cache on the load balancer plus the app cache passes within budget', () => {
-    const g = clone(level3.start)
-    g.nodes.push(node('cache', 'edge'))
-    g.edges.push(edge('lb1', 'edge'))
-    expect(passesLevel(g)).toBe(true)
-    expect(costOf(g)).toBeLessThanOrEqual(level3.budget)
-  })
-
-  it('brute force: twelve small servers and one shared app cache passes, right at budget', () => {
-    const g = clone(level3.start)
-    for (let i = 7; i <= 12; i++) {
-      g.nodes.push(node('web', `web${i}`))
-      g.edges.push(edge('lb1', `web${i}`), edge(`web${i}`, 'cache1'), edge(`web${i}`, 'db'))
-    }
-    expect(passesLevel(g)).toBe(true)
-    expect(costOf(g)).toBe(level3.budget)
-  })
-
-  it('trap: one cache per server instead of a shared one fails on the database', () => {
-    const g = clone(level3.start)
-    g.nodes = g.nodes.filter((n) => n.id !== 'cache1')
-    g.edges = g.edges.filter((e) => e.to !== 'cache1')
-    for (let i = 7; i <= 12; i++) {
-      g.nodes.push(node('web', `web${i}`))
-      g.edges.push(edge('lb1', `web${i}`), edge(`web${i}`, 'db'))
-    }
-    for (let i = 1; i <= 6; i++) {
-      g.nodes.push(node('cache', `c${i}`))
-      g.edges.push(edge(`web${i}`, `c${i}`))
-    }
-    // still under budget? if not, the trap is budget-blocked rather than db-blocked, which is fine too
-    const bp = breakingPoint(g, level3.traffic!, level3.targetQps)
-    expect(bp?.nodeId).toBe('db')
-  })
-
-  it('trap: edge cache alone, no app cache, fails on the database', () => {
-    const g = clone(level3.start)
-    g.nodes = g.nodes.filter((n) => n.id !== 'cache1')
-    g.edges = g.edges.filter((e) => e.to !== 'cache1')
-    g.nodes.push(node('cache', 'edge'))
-    g.edges.push(edge('lb1', 'edge'))
-    expect(breakingPoint(g, level3.traffic!, level3.targetQps)?.nodeId).toBe('db')
+describe('level 0', () => {
+  it('starts on one small server that breaks at 300', () => {
+    expect(breakingPoint(LEVELS[0].start, ALL_PUBLIC, 10_000)).toEqual({ qps: 300, nodeId: 'web1' })
   })
 })

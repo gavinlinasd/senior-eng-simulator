@@ -1,45 +1,36 @@
-import type { Level, SimNode } from '../sim/types'
+import { DATABASE, board, defineLevel } from './build'
 
-const database: SimNode = { id: 'db', type: 'db', name: 'Database', x: 700, y: 255, locked: true }
+const web = (count: number) => ({ type: 'web' as const, count })
 
-export const level2: Level = {
+export const level2 = defineLevel({
   id: 2,
   title: 'Reddit traffic',
   brief:
     'The landing page grew into an app with accounts and comments, so every request needs the database. Someone posted it to Reddit. Traffic will climb to 1,500 requests a second: 20% public pages, 70% private reads, 10% writes. The database is one managed box that cannot be scaled.',
   targetQps: 1500,
   budget: 650,
-  rampMs: 5000,
+  traffic: { public: 0.2, private: 0.7, write: 0.1 },
+  requiresDatabase: true,
+  introduces: ['cache'],
+  start: board('users', 'lb', web(2), DATABASE),
+  carryOver: { add: [DATABASE], wireFrom: { db: ['web', 'bigweb'] } },
+  solutions: [
+    board('users', 'lb', web(8), ['cache', DATABASE]),
+    board('users', 'lb', web(6), ['cache', DATABASE]),
+    board('users', 'lb', { type: 'bigweb', count: 3 }, ['cache', DATABASE]),
+  ],
+  traps: [
+    // more servers, no cache: the database still gets everything
+    board('users', 'lb', web(8), DATABASE),
+    // an edge cache alone can't serve the private reads
+    board('users', 'lb', [web(6), { type: 'cache', id: 'edge', from: ['lb1'] }], DATABASE),
+  ],
+  stars: { three: 450, two: 300 },
   hints: [
     'Watch which card turns red first. The database receives everything the web servers receive, however many servers there are.',
     'Look at the traffic mix in the HUD. Reads can be answered from a cache; writes can’t. Most of this traffic is reads.',
     'Attach a cache to each web server and keep the database wire. Reads mostly stop at the cache; misses and writes still go through.',
   ],
-  stars: { three: 450, two: 300 },
-  requiresDatabase: true,
-  traffic: { public: 0.2, private: 0.7, write: 0.1 },
-  palette: ['lb', 'web', 'bigweb', 'cache'],
-  introduces: ['cache'],
-  start: {
-    nodes: [
-      { id: 'users', type: 'users', name: 'Users', x: 80, y: 255 },
-      { id: 'lb1', type: 'lb', name: 'Load balancer 1', x: 380, y: 255 },
-      { id: 'web1', type: 'web', name: 'Web server 1', x: 700, y: 200 },
-      { id: 'web2', type: 'web', name: 'Web server 2', x: 700, y: 310 },
-      { ...database, x: 1020 },
-    ],
-    edges: [
-      { id: 'users->lb1', from: 'users', to: 'lb1' },
-      { id: 'lb1->web1', from: 'lb1', to: 'web1' },
-      { id: 'lb1->web2', from: 'lb1', to: 'web2' },
-      { id: 'web1->db', from: 'web1', to: 'db' },
-      { id: 'web2->db', from: 'web2', to: 'db' },
-    ],
-  },
-  carryOver: {
-    add: [database],
-    wireFrom: { db: ['web', 'bigweb'] },
-  },
   intro: [
     {
       title: 'Reddit found you',
@@ -55,4 +46,4 @@ export const level2: Level = {
     title: 'You just added a read cache',
     body: 'Most traffic was reads of the same data, so a **cache-aside** cache answered them from memory and the database only saw misses and writes. The database is usually the thing that falls over, because it’s the one part you can’t just add more of. A cache on the load balancer only ever serves public pages, since it never sees who’s asking, so private reads still need a cache behind the app.',
   },
-}
+})

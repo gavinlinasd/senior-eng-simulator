@@ -1,31 +1,22 @@
-import type { Level } from '../sim/types'
+import { board, defineLevel } from './build'
 
-export const level0: Level = {
+export const level0 = defineLevel({
   id: 0,
   title: 'Hacker News traffic',
   brief:
     'Someone posted your landing page to Hacker News. The whole site is one small web server, and traffic is about to climb to 500 requests a second. Keep every component under 100%.',
   targetQps: 500,
   budget: 150,
-  rampMs: 5000,
+  palette: ['web', 'bigweb'],
+  introduces: ['bigweb'],
+  start: board('users', 'web'),
+  solutions: [board('users', 'bigweb')],
+  traps: [board('users', 'web')],
+  stars: { three: 140, two: 100 },
   hints: [
     'Look at the max QPS on each card in the tray. One of them can take 500 requests a second on its own.',
     'Remove the small server (hover it and click the ×), add the large one, and wire Users to it.',
   ],
-  stars: { three: 140, two: 100 },
-  palette: ['web', 'bigweb'],
-  introduces: ['bigweb'],
-  lesson: {
-    title: 'You just did vertical scaling',
-    body: 'One machine couldn’t keep up, so you swapped it for a bigger one. That’s **vertical scaling**: more capacity per box. It’s the simplest fix, and it runs out fast, because boxes only get so big and the price climbs faster than the capacity.',
-  },
-  start: {
-    nodes: [
-      { id: 'users', type: 'users', name: 'Users', x: 80, y: 200 },
-      { id: 'web1', type: 'web', name: 'Web server 1', x: 420, y: 200 },
-    ],
-    edges: [{ id: 'users->web1', from: 'users', to: 'web1' }],
-  },
   intro: [
     {
       title: 'Your site just hit the front page',
@@ -60,4 +51,8 @@ export const level0: Level = {
       wait: 'This step finishes when a run passes.',
     },
   ],
-}
+  lesson: {
+    title: 'You just did vertical scaling',
+    body: 'One machine couldn’t keep up, so you swapped it for a bigger one. That’s **vertical scaling**: more capacity per box. It’s the simplest fix, and it runs out fast, because boxes only get so big and the price climbs faster than the capacity.',
+  },
+})
