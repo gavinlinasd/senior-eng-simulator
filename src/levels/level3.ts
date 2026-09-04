@@ -8,7 +8,7 @@ export const level3 = defineLevel({
   id: 3,
   title: 'Front page of the internet',
   brief:
-    'Now it’s on the front page. Traffic will climb to 3,000 requests a second: half of it the public landing page and images, 40% personalized feeds, 10% writes. Same tools, same database.',
+    'Now it’s on the front page of Reddit. Traffic will climb to 3,000 requests a second: half of it the public landing page and images, 40% personalized feeds, 10% writes. Same tools, same database.',
   targetQps: 3000,
   budget: 850,
   traffic: { public: 0.5, private: 0.4, write: 0.1 },

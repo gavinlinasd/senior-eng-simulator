@@ -30,7 +30,7 @@ import {
   type FlowEdge,
   type FlowNode,
 } from './ui/flow'
-import { introSeen, markIntroSeen } from './ui/intro'
+import { forgetIntro, introSeen, markIntroSeen } from './ui/intro'
 import { LevelPanel } from './ui/LevelPanel'
 import { LevelPickerModal } from './ui/LevelPickerModal'
 import { RunContext, type RunState } from './ui/RunContext'
@@ -336,9 +336,19 @@ function Game() {
   )
 }
 
+/**
+ * "/" is the title page. Start begins at the first level with its tutorial,
+ * even if that tutorial was dismissed before. A link with #level=N skips the
+ * title and opens that level directly.
+ */
 export default function App() {
-  const [started, setStarted] = useState(false)
-  if (!started) return <StartScreen onStart={() => setStarted(true)} />
+  const [started, setStarted] = useState(() => levelIndexFromHash() !== null)
+  const start = () => {
+    forgetIntro(LEVELS[0].id)
+    writeLevelToHash(0)
+    setStarted(true)
+  }
+  if (!started) return <StartScreen onStart={start} />
   return (
     <ReactFlowProvider>
       <Game />

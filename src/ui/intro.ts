@@ -16,3 +16,12 @@ export function markIntroSeen(levelId: number) {
     /* ignore */
   }
 }
+
+/** Forget a dismissal, so the walkthrough shows again on the next entry. */
+export function forgetIntro(levelId: number) {
+  try {
+    localStorage.removeItem(key(levelId))
+  } catch {
+    /* ignore */
+  }
+}

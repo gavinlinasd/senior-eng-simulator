@@ -4,9 +4,9 @@ const web = (count: number) => ({ type: 'web' as const, count })
 
 export const level2 = defineLevel({
   id: 2,
-  title: 'Reddit traffic',
+  title: 'Launch on Product Hunt',
   brief:
-    'The landing page grew into an app with accounts and comments, so every request needs the database. Someone posted it to Reddit. Traffic will climb to 1,500 requests a second: 20% public pages, 70% private reads, 10% writes. The database is one managed box that cannot be scaled.',
+    'The landing page grew into an app with accounts and comments, so every request needs the database. Today it launches on Product Hunt. Traffic will climb to 1,500 requests a second: 20% public pages, 70% private reads, 10% writes. The database is one managed box that cannot be scaled.',
   targetQps: 1500,
   budget: 650,
   traffic: { public: 0.2, private: 0.7, write: 0.1 },
@@ -33,9 +33,9 @@ export const level2 = defineLevel({
   ],
   intro: [
     {
-      title: 'Reddit found you',
+      title: 'Launch day',
       body: [
-        'The app has accounts and comments now, so every request needs the database. Someone posted it to Reddit: 1,500 requests a second on a $650 budget.',
+        'The app has accounts and comments now, so every request needs the database. It launches on Product Hunt today: 1,500 requests a second on a $650 budget.',
         'The database is already on the board, wired from every web server. It can’t be scaled or removed.',
       ],
       showMix: true,
