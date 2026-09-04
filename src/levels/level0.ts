@@ -24,6 +24,7 @@ export const level0 = defineLevel({
         "You're the only engineer at a tiny startup, and someone just posted your landing page to Hacker News. Traffic will climb from nothing to 500 requests a second. Right now the whole site is one small web server.",
       ],
       note: 'Every component has a max QPS. When any one of them hits 100%, the site is down and the run stops right there.',
+      showGoal: true,
     },
     {
       target: 'tray',

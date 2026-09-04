@@ -314,7 +314,7 @@ function Game() {
       </div>
       <Tutorial
         steps={tourSteps}
-        traffic={level.traffic}
+        level={level}
         index={tourIndex}
         onNext={tourNext}
         onBack={tourBack}

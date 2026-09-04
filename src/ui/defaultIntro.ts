@@ -1,6 +1,5 @@
 import type { IntroStep, Level } from '../sim/types'
 import { classesIn } from './classes'
-import { fmt } from './format'
 
 /**
  * Walkthrough steps for a level. A level can hand-write its own (level 0's
@@ -14,11 +13,8 @@ export function introFor(level: Level): IntroStep[] {
   return [
     {
       title: `Level ${level.id}: ${level.title}`,
-      body: [
-        level.brief,
-        `Target: ${fmt(level.targetQps)} requests a second on a $${level.budget} budget.`,
-        ...(level.introNotes ?? []),
-      ],
+      body: [level.brief, ...(level.introNotes ?? [])],
+      showGoal: true,
       showMix: hasMix,
       cards: level.introduces,
     },

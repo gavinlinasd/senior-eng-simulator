@@ -126,6 +126,8 @@ export interface IntroStep {
   advance?: 'failed' | 'passed'
   /** Caption shown while waiting for `advance`. */
   wait?: string
+  /** Show the level's goal as tiles: target traffic, budget, pass condition. */
+  showGoal?: boolean
   /** Show the level's traffic mix as a bar. */
   showMix?: boolean
   /** Caption over the mix bar. Default "Traffic mix". */

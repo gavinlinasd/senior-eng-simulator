@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { ClassLoad, IntroStep, TourTarget } from '../sim/types'
+import type { IntroStep, Level, TourTarget } from '../sim/types'
 import { PROVIDER_SHORT } from './brand'
 import { ComponentCard } from './ComponentCard'
+import { GoalTiles } from './GoalTiles'
 import { RichText } from './RichText'
 import { TrafficMixBar } from './TrafficMixBar'
 
@@ -93,8 +94,8 @@ function place(rect: Rect | null, card: { width: number; height: number }, obsta
 
 interface TutorialProps {
   steps: IntroStep[]
-  /** The level's traffic mix, for steps that show it. */
-  traffic?: ClassLoad
+  /** The level, for steps that show its goal or traffic mix. */
+  level: Level
   /** Current step, or null when the walkthrough is closed. */
   index: number | null
   onNext: () => void
@@ -107,7 +108,7 @@ interface TutorialProps {
  * step can ask the player to do something. Steps are level data; this only
  * knows how to point at parts of the page.
  */
-export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: TutorialProps) {
+export function Tutorial({ steps, level, index, onNext, onBack, onClose }: TutorialProps) {
   const [rect, setRect] = useState<Rect | null>(null)
   const [obstacles, setObstacles] = useState<Rect[]>([])
   const [card, setCard] = useState({ width: 400, height: 200 })
@@ -181,10 +182,16 @@ export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: Tut
               <RichText text={step.note} />
             </p>
           )}
-          {step.showMix && traffic && (
+          {step.showGoal && (
+            <div className="tour__figure">
+              <div className="tour__caption">Goal</div>
+              <GoalTiles level={level} />
+            </div>
+          )}
+          {step.showMix && level.traffic && (
             <div className="tour__figure">
               <div className="tour__caption">{step.mixTitle ?? 'Traffic mix'}</div>
-              <TrafficMixBar traffic={traffic} />
+              <TrafficMixBar traffic={level.traffic} />
             </div>
           )}
           {step.cards?.map((type) => (
