@@ -4,6 +4,7 @@ import { CATALOGUE } from '../sim/catalogue'
 import type { NodeType } from '../sim/types'
 import { DRAG_MIME } from './flow'
 import { fmt } from './format'
+import { HitCurveChart } from './HitCurveChart'
 import { ICONS } from './icons'
 import { RichText } from './RichText'
 
@@ -63,6 +64,7 @@ export function Tray({ palette, introduces, onAdd }: TrayProps) {
                 <div className="tray__blurb">
                   <RichText text={spec.blurb} />
                 </div>
+                {spec.hitCurve && <HitCurveChart curve={spec.hitCurve} />}
               </div>
             </div>
           )

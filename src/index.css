@@ -1007,3 +1007,35 @@ dialog::backdrop {
   justify-content: flex-end;
   margin-top: 14px;
 }
+
+/* ---------- hit-rate sparkline ---------- */
+
+.hit-curve {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  margin-top: 6px;
+}
+
+.hit-curve__axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.hit-curve__line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.hit-curve__dot {
+  fill: var(--accent);
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.hit-curve__label {
+  font-size: 9px;
+  fill: var(--muted);
+}
