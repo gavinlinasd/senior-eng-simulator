@@ -35,6 +35,6 @@ export const level3 = defineLevel({
   ],
   lesson: {
     title: '**Where a cache sits** decides what it can serve',
-    body: 'A cache on the load balancer never sees who is asking, so it can only serve **public** pages, but it serves them before they touch a web server. A cache behind the app sees signed-in requests and serves **private** reads too. And every cache gets better the more lookups it sees, so **one shared cache beats a handful of small ones**.',
+    body: 'A cache on the load balancer never sees who is asking, so it serves **public pages only**, before they reach a web server. A cache behind the app serves **private reads** too. Hit rate grows with lookups, so **one shared cache beats several small ones**.',
   },
 })
