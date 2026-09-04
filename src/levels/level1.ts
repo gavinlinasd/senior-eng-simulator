@@ -6,7 +6,7 @@ export const level1: Level = {
   brief:
     'It held, and now someone posted it on X. Traffic will climb to 1,000 requests a second. Keep every component under 100%.',
   targetQps: 1000,
-  budget: 350,
+  budget: 340,
   rampMs: 5000,
   stars: { three: 300, two: 200 },
   palette: ['lb', 'web', 'bigweb'],

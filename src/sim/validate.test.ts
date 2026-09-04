@@ -7,12 +7,12 @@ describe('validate', () => {
   it('accepts the start graph and the intended solutions', () => {
     expect(validate(level1.start, level1)).toEqual([])
     expect(validate(behindLb(...repeat('web', 4)), level1)).toEqual([])
-    expect(validate(behindLb(...repeat('web', 5)), level1)).toEqual([])
     expect(validate(behindLb('bigweb', 'bigweb'), level1)).toEqual([])
   })
 
-  it('LB + 6 web servers is over budget by $50', () => {
-    expect(validate(behindLb(...repeat('web', 6)), level1)).toEqual(['Over budget by $50.'])
+  it('a fifth web server is $10 over budget, so nothing can be padded into the green', () => {
+    expect(validate(behindLb(...repeat('web', 5)), level1)).toEqual(['Over budget by $10.'])
+    expect(validate(behindLb(...repeat('web', 6)), level1)).toEqual(['Over budget by $60.'])
   })
 
   it('users with two outgoing edges is an error', () => {

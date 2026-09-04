@@ -6,20 +6,20 @@ import { level2 } from '../levels/level2'
 
 describe('stars', () => {
   it('three at the top threshold, two at the next, one for any other pass', () => {
-    expect(starsFor(level1, 317)).toBe(3)
-    expect(starsFor(level1, 300)).toBe(3)
-    expect(starsFor(level1, 299)).toBe(2)
-    expect(starsFor(level1, 200)).toBe(2)
-    expect(starsFor(level1, 143)).toBe(1)
-    expect(nextStarFor(level1, 143)).toBe(200)
-    expect(nextStarFor(level1, 217)).toBe(300)
-    expect(nextStarFor(level1, 317)).toBeNull()
+    const { three, two } = level1.stars
+    expect(starsFor(level1, three)).toBe(3)
+    expect(starsFor(level1, three - 1)).toBe(2)
+    expect(starsFor(level1, two)).toBe(2)
+    expect(starsFor(level1, two - 1)).toBe(1)
+    expect(nextStarFor(level1, two - 1)).toBe(two)
+    expect(nextStarFor(level1, two)).toBe(three)
+    expect(nextStarFor(level1, three)).toBeNull()
   })
 
   it('is part of the score', () => {
-    expect(score(behindLb(...repeat('web', 5)), level1)).toMatchObject({ stars: 3, nextStarAt: null })
-    expect(score(behindLb(...repeat('web', 4)), level1)).toMatchObject({ stars: 2, nextStarAt: 300 })
-    expect(score(behindLb('bigweb', 'bigweb'), level1)).toMatchObject({ stars: 1, nextStarAt: 200 })
+    const s = score(behindLb(...repeat('web', 4)), level1)!
+    expect(s.stars).toBe(starsFor(level1, s.total))
+    expect(s.nextStarAt).toBe(nextStarFor(level1, s.total))
   })
 })
 
@@ -29,33 +29,23 @@ describe('score', () => {
     expect(score(chain('bigweb'), level1)).toBeNull()
   })
 
-  it('LB + 4 web servers: four servers with 17% spare each, $50 left, no bonus', () => {
+  it('LB + 4 web servers: four servers with 17% spare each, $40 left, no bonus', () => {
     expect(score(behindLb(...repeat('web', 4)), level1)).toMatchObject({
       base: 100,
       headroom: 67,
-      budgetLeft: 50,
+      budgetLeft: 40,
       bonus: 0,
-      total: 217,
+      total: 207,
     })
   })
 
-  it('LB + 5 web servers: five servers with 33% spare each, nothing left, green bonus', () => {
-    expect(score(behindLb(...repeat('web', 5)), level1)).toMatchObject({
-      base: 100,
-      headroom: 167,
-      budgetLeft: 0,
-      bonus: 50,
-      total: 317,
-    })
-  })
-
-  it('LB + 2 large servers: two servers with 17% spare each, $10 left, no bonus', () => {
+  it('LB + 2 large servers: two servers with 17% spare each, nothing left, no bonus', () => {
     expect(score(behindLb('bigweb', 'bigweb'), level1)).toMatchObject({
       base: 100,
       headroom: 33,
-      budgetLeft: 10,
+      budgetLeft: 0,
       bonus: 0,
-      total: 143,
+      total: 133,
     })
   })
 
