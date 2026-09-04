@@ -35,6 +35,7 @@ import { LevelPanel } from './ui/LevelPanel'
 import { LevelPickerModal } from './ui/LevelPickerModal'
 import { RunContext, type RunState } from './ui/RunContext'
 import { RunHud } from './ui/RunHud'
+import { StartScreen } from './ui/StartScreen'
 import { SuccessModal } from './ui/SuccessModal'
 import { Tray } from './ui/Tray'
 import { Tutorial } from './ui/Tutorial'
@@ -336,6 +337,8 @@ function Game() {
 }
 
 export default function App() {
+  const [started, setStarted] = useState(false)
+  if (!started) return <StartScreen onStart={() => setStarted(true)} />
   return (
     <ReactFlowProvider>
       <Game />
