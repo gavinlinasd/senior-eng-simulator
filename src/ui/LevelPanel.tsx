@@ -4,6 +4,7 @@ import { fmt, pct } from './format'
 import { Lesson } from './Lesson'
 import type { Phase } from './RunContext'
 import { ScoreTable } from './ScoreTable'
+import { Stars } from './Stars'
 
 interface LevelPanelProps {
   level: Level
@@ -91,6 +92,7 @@ export function LevelPanel({
         <div className="verdict verdict--ok">
           <div className="verdict__title">Holding steady at {fmt(level.targetQps)} QPS</div>
           <div className="verdict__body">Nothing crossed 100%. This design serves the target load.</div>
+          <Stars earned={score.stars} size={18} nextAt={score.nextStarAt} />
           <ScoreTable score={score} />
           {level.lesson && <Lesson lesson={level.lesson} />}
           {hasNext ? (

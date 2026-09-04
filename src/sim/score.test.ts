@@ -1,8 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { score } from './score'
+import { score, starsFor, nextStarFor } from './score'
 import { behindLb, chain, edge, node, repeat } from './fixtures'
 import { level1 } from '../levels/level1'
 import { level2 } from '../levels/level2'
+
+describe('stars', () => {
+  it('three at the top threshold, two at the next, one for any other pass', () => {
+    expect(starsFor(level1, 317)).toBe(3)
+    expect(starsFor(level1, 300)).toBe(3)
+    expect(starsFor(level1, 299)).toBe(2)
+    expect(starsFor(level1, 200)).toBe(2)
+    expect(starsFor(level1, 143)).toBe(1)
+    expect(nextStarFor(level1, 143)).toBe(200)
+    expect(nextStarFor(level1, 217)).toBe(300)
+    expect(nextStarFor(level1, 317)).toBeNull()
+  })
+
+  it('is part of the score', () => {
+    expect(score(behindLb(...repeat('web', 5)), level1)).toMatchObject({ stars: 3, nextStarAt: null })
+    expect(score(behindLb(...repeat('web', 4)), level1)).toMatchObject({ stars: 2, nextStarAt: 300 })
+    expect(score(behindLb('bigweb', 'bigweb'), level1)).toMatchObject({ stars: 1, nextStarAt: 200 })
+  })
+})
 
 describe('score', () => {
   it('is null for a failing design', () => {

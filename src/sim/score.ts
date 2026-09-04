@@ -22,12 +22,28 @@ export function score(graph: Graph, level: Level): Score | null {
   const headroom = Math.round(spare)
   const budgetLeft = Math.max(0, level.budget - costOf(graph))
   const bonus = peakUtil < WARN_AT ? GREEN_BONUS : 0
+  const total = PASS_POINTS + headroom + budgetLeft + bonus
   return {
     base: PASS_POINTS,
     headroom,
     budgetLeft,
     bonus,
-    total: PASS_POINTS + headroom + budgetLeft + bonus,
+    total,
     peakUtil,
+    stars: starsFor(level, total),
+    nextStarAt: nextStarFor(level, total),
   }
+}
+
+/** Stars for a passing score: three at or above the level's top threshold, two above the next, else one. */
+export function starsFor(level: Level, total: number): number {
+  if (total >= level.stars.three) return 3
+  if (total >= level.stars.two) return 2
+  return 1
+}
+
+export function nextStarFor(level: Level, total: number): number | null {
+  if (total < level.stars.two) return level.stars.two
+  if (total < level.stars.three) return level.stars.three
+  return null
 }

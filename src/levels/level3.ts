@@ -33,6 +33,7 @@ export const level3: Level = {
   targetQps: 3000,
   budget: 850,
   rampMs: 5000,
+  stars: { three: 500, two: 350 },
   traffic: { public: 0.5, private: 0.4, write: 0.1 },
   palette: ['lb', 'web', 'bigweb', 'cache'],
   start,

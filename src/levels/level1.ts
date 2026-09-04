@@ -8,6 +8,7 @@ export const level1: Level = {
   targetQps: 1000,
   budget: 350,
   rampMs: 5000,
+  stars: { three: 300, two: 200 },
   palette: ['lb', 'web', 'bigweb'],
   introduces: ['lb'],
   lesson: {

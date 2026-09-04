@@ -148,6 +148,8 @@ export interface Level {
   intro?: IntroStep[]
   /** Takeaway shown when the level is passed. Names the technique the player just used. */
   lesson?: { title: string; body: string }
+  /** Score thresholds for three and two stars. Any pass earns one. */
+  stars: { three: number; two: number }
 }
 
 export interface Score {
@@ -157,4 +159,8 @@ export interface Score {
   bonus: number
   total: number
   peakUtil: number
+  /** 1 to 3 for a pass. */
+  stars: number
+  /** Score needed for the next star, if any. */
+  nextStarAt: number | null
 }

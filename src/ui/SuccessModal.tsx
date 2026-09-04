@@ -4,6 +4,7 @@ import { fmt } from './format'
 import { Lesson } from './Lesson'
 import { Modal } from './Modal'
 import { ScoreTable } from './ScoreTable'
+import { Stars } from './Stars'
 
 interface SuccessModalProps {
   open: boolean
@@ -25,6 +26,7 @@ export function SuccessModal({ open, level, score, hasNext, onNext, onClose }: S
         The site stayed up.
       </h2>
       <p className="celebrate__sub">Traffic reached {fmt(level.targetQps)} QPS and nothing crossed 100%.</p>
+      {score && <Stars earned={score.stars} size={34} nextAt={score.nextStarAt} />}
       {score && <ScoreTable score={score} />}
       {level.lesson && <Lesson lesson={level.lesson} />}
       {score && !score.bonus && (

@@ -1049,3 +1049,36 @@ dialog::backdrop {
   font-size: 9px;
   fill: var(--muted);
 }
+
+/* ---------- stars ---------- */
+
+.stars {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 10px;
+}
+
+.verdict .stars {
+  align-items: flex-start;
+  margin: 8px 0 6px;
+}
+
+.stars__row {
+  display: flex;
+  gap: 4px;
+}
+
+.stars__star {
+  color: var(--line);
+}
+
+.stars__star.is-earned {
+  color: var(--warn);
+}
+
+.stars__hint {
+  font-size: 12px;
+  color: var(--muted);
+}

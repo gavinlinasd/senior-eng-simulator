@@ -19,6 +19,8 @@ describe('levels', () => {
         expect(level.carryOver?.add.map((n) => n.id)).toContain(id)
       }
       if (level.traffic) expect(level.traffic.public + level.traffic.private + level.traffic.write).toBeCloseTo(1, 10)
+      expect(level.stars.three).toBeGreaterThan(level.stars.two)
+      expect(level.stars.two).toBeGreaterThan(0)
     }
   })
 
