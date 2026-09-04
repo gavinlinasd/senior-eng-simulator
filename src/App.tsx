@@ -344,16 +344,26 @@ function Game() {
  * title and opens that level directly.
  */
 export default function App() {
-  const [started, setStarted] = useState(() => levelIndexFromHash() !== null)
+  // title -> leaving (title slides up over the board) -> playing
+  const [phase, setPhase] = useState<'title' | 'leaving' | 'playing'>(() =>
+    levelIndexFromHash() !== null ? 'playing' : 'title',
+  )
   const start = () => {
     forgetIntro(LEVELS[0].id)
     writeLevelToHash(0)
-    setStarted(true)
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setPhase(reduced ? 'playing' : 'leaving')
   }
-  if (!started) return <StartScreen onStart={start} />
   return (
-    <ReactFlowProvider>
-      <Game />
-    </ReactFlowProvider>
+    <>
+      {phase !== 'title' && (
+        <ReactFlowProvider>
+          <Game />
+        </ReactFlowProvider>
+      )}
+      {phase !== 'playing' && (
+        <StartScreen onStart={start} leaving={phase === 'leaving'} onGone={() => setPhase('playing')} />
+      )}
+    </>
   )
 }

@@ -1269,10 +1269,12 @@ dialog::backdrop {
 /* ---------- title screen ---------- */
 
 .start {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100%;
   padding: 24px;
   background:
     linear-gradient(rgba(142, 197, 255, 0.06) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -1333,6 +1335,17 @@ dialog::backdrop {
 .start__button:active {
   transform: translateY(6px);
   box-shadow: none;
+}
+
+/* Start pressed: the title lifts away like a curtain and the board is underneath */
+.start.is-leaving {
+  animation: start-leave 0.7s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+}
+
+@keyframes start-leave {
+  to {
+    transform: translateY(-100%);
+  }
 }
 
 @keyframes start-blink {
