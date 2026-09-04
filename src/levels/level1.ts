@@ -6,7 +6,7 @@ export const level1 = defineLevel({
   id: 1,
   title: 'Twitter/X traffic',
   brief:
-    'It held, and now someone posted it on X. Traffic will climb to 1,000 requests a second. Keep every component under 100%.',
+    'People liked what they saw. One of them posted it on X and it’s going viral: traffic will climb to 1,000 requests a second. Keep every component under 100%.',
   targetQps: 1000,
   budget: 340,
   introduces: ['lb'],
