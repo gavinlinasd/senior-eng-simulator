@@ -18,18 +18,18 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   const r = results[id] ?? { load: 0, public: 0, private: 0, write: 0, util: 0 }
   const isUsers = data.simType === 'users'
   const status = isUsers ? 'users' : statusOf(r.util)
-  const lit = Math.round(Math.min(1, r.util) * SEGMENTS)
   const className = [
     'sim-node',
     `sim-node--${data.simType}`,
     failedNodeId === id ? 'is-failed' : '',
     data.locked ? 'is-locked' : '',
   ].join(' ')
+  const isCache = spec.hitCurve !== undefined
   const classes = showClasses ? (
     <div className="sim-node__classes">
-      {r.hitRate !== undefined ? (
+      {isCache ? (
         <>
-          {fmt(r.load)} lookups · hit {pct(r.hitRate)}%
+          {fmt(r.public)} pub · {fmt(r.private)} priv
         </>
       ) : (
         <>
@@ -38,6 +38,10 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
       )}
     </div>
   ) : null
+  // A cache shows its hit rate where other components show CPU.
+  const hit = r.hitRate ?? 0
+  const meterValue = isCache ? hit : Math.min(1, r.util)
+  const meterLit = Math.round(meterValue * SEGMENTS)
 
   return (
     <div className={className} data-status={status}>
@@ -73,16 +77,23 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
         ) : (
           <>
             <div className="sim-node__row">
-              {fmt(r.load)} / {fmt(spec.capacity)} QPS
+              {fmt(r.load)} / {fmt(spec.capacity)} {isCache ? 'lookups' : 'QPS'}
             </div>
-            <div className="cpu" role="meter" aria-label="CPU load" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct(r.util)}>
-              <span className="cpu__label">CPU</span>
+            <div
+              className={isCache ? 'cpu cpu--hit' : 'cpu'}
+              role="meter"
+              aria-label={isCache ? 'Cache hit rate' : 'CPU load'}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct(meterValue)}
+            >
+              <span className="cpu__label">{isCache ? 'HIT' : 'CPU'}</span>
               <div className="cpu__segments" aria-hidden>
                 {Array.from({ length: SEGMENTS }, (_, i) => (
-                  <span key={i} className={i < lit ? 'is-lit' : undefined} />
+                  <span key={i} className={i < meterLit ? 'is-lit' : undefined} />
                 ))}
               </div>
-              <span className="sim-node__pct">{pct(r.util)}%</span>
+              <span className="sim-node__pct">{isCache && r.load === 0 ? '—' : `${pct(meterValue)}%`}</span>
             </div>
             {classes}
           </>

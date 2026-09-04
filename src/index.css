@@ -220,6 +220,16 @@ button:focus-visible,
   text-align: right;
 }
 
+/* a cache's meter is its hit rate, in a neutral blue rather than a load colour */
+.cpu--hit .cpu__segments span.is-lit,
+.cpu--hit .cpu__segments span.is-lit {
+  background: var(--accent);
+}
+
+.cpu--hit .sim-node__pct {
+  color: var(--accent);
+}
+
 .sim-node__classes {
   margin-top: 3px;
   font-size: 11px;
