@@ -45,7 +45,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     cost: 150,
     distribute: 'fanout',
     blurb:
-      'Cache-aside, Redis style. On a web server it serves that server’s reads; on the load balancer, **public** pages only. Hit rate grows with lookups, logarithmically:',
+      'Cache-aside, Redis style. On a web server it serves that server’s reads; on the load balancer, **public** pages only. Hit rate grows with lookups, logarithmically.',
     needsDownstream: false,
     hitCurve: { baseLoad: 500, baseRate: 0.8, perDoubling: 0.1, max: 0.95 },
     sink: true,

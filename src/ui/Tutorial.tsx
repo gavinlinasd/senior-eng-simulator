@@ -96,6 +96,7 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
 
   if (!step || index === null) return null
   const last = index === steps.length - 1
+  const single = steps.length === 1
   const pos = place(rect, card)
   // Steps that wait for the player leave the page bright and ring the target instead of dimming around it.
   const interactive = Boolean(step.advance)
@@ -111,10 +112,12 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
         !interactive && <div className="tour__dim" />
       )}
       <div ref={cardRef} className={interactive ? 'tour__card tour__card--turn' : 'tour__card'} style={{ left: pos.left, top: pos.top }}>
-        <div className="tour__step">
-          {index + 1} of {steps.length}
-          {interactive && <span className="tour__turn">Your turn</span>}
-        </div>
+        {!single && (
+          <div className="tour__step">
+            {index + 1} of {steps.length}
+            {interactive && <span className="tour__turn">Your turn</span>}
+          </div>
+        )}
         <h2 id="tour-title" className="tour__title">
           {step.title}
         </h2>
@@ -131,13 +134,16 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
           )}
         </div>
         <div className="tour__nav">
-          <button className="btn btn--muted" onClick={onClose}>
-            Skip
-          </button>
+          {!single && (
+            <button className="btn btn--muted" onClick={onClose}>
+              Skip
+            </button>
+          )}
           <div className="tour__dots" aria-hidden>
-            {steps.map((s, i) => (
-              <span key={s.title} className={i === index ? 'tour__dot is-current' : 'tour__dot'} />
-            ))}
+            {!single &&
+              steps.map((s, i) => (
+                <span key={s.title} className={i === index ? 'tour__dot is-current' : 'tour__dot'} />
+              ))}
           </div>
           {index > 0 && (
             <button className="btn" onClick={onBack}>
@@ -148,7 +154,7 @@ export function Tutorial({ steps, index, onNext, onBack, onClose }: TutorialProp
             <span className="tour__wait">{step.wait ?? 'This step finishes when you do it.'}</span>
           ) : (
             <button key={index} className="btn btn--primary" onClick={last ? onClose : onNext} autoFocus>
-              {last ? 'Done' : 'Next'}
+              {single ? "Let's go" : last ? 'Done' : 'Next'}
             </button>
           )}
         </div>

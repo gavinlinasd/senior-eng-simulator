@@ -54,9 +54,14 @@ function isStructural(changes: Array<NodeChange<FlowNode> | EdgeChange<FlowEdge>
   return changes.some((c) => c.type === 'add' || c.type === 'remove')
 }
 
-/** Step to open a level's walkthrough at, or null if it has been seen. */
+/**
+ * Whether to open a level's walkthrough on entry. A one-page intro shows every
+ * time the level is entered; a guided multi-step tutorial only until dismissed.
+ */
 function tourStartFor(levelIndex: number): number | null {
-  return introSeen(LEVELS[levelIndex].id) ? null : 0
+  const level = LEVELS[levelIndex]
+  const guided = introFor(level).length > 1
+  return guided && introSeen(level.id) ? null : 0
 }
 
 function Game() {
@@ -139,7 +144,7 @@ function Game() {
   const reset = run.reset
 
   const enterLevel = useCallback(
-    (index: number, board: Graph) => {
+    (index: number, board: Graph, withIntro: boolean) => {
       const start = fromLevel(board)
       reset()
       setLevelIndex(index)
@@ -147,17 +152,18 @@ function Game() {
       setNodes(start.nodes)
       setEdges(start.edges)
       void fitView(FIT_VIEW_OPTIONS)
-      setTourIndex(tourStartFor(index))
+      setTourIndex(withIntro ? tourStartFor(index) : null)
     },
     [reset, setNodes, setEdges, fitView, setTourIndex],
   )
 
   /** Jump to a level with its own fresh board. */
-  const loadLevel = useCallback((index: number) => enterLevel(index, LEVELS[index].start), [enterLevel])
-  const resetLevel = useCallback(() => enterLevel(levelIndex, entryBoard), [enterLevel, levelIndex, entryBoard])
+  const loadLevel = useCallback((index: number) => enterLevel(index, LEVELS[index].start, true), [enterLevel])
+  /** Back to the board this level was entered with. No intro again. */
+  const resetLevel = useCallback(() => enterLevel(levelIndex, entryBoard, false), [enterLevel, levelIndex, entryBoard])
   /** Advance, carrying the current board into the next level. */
   const nextLevel = useCallback(() => {
-    if (hasNext) enterLevel(levelIndex + 1, carryInto(graph, LEVELS[levelIndex + 1]))
+    if (hasNext) enterLevel(levelIndex + 1, carryInto(graph, LEVELS[levelIndex + 1]), true)
   }, [hasNext, enterLevel, levelIndex, graph])
 
   const [pickerOpen, setPickerOpen] = useState(false)

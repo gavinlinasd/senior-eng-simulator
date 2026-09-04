@@ -38,28 +38,11 @@ export const level2: Level = {
     {
       title: 'Reddit found you',
       body: [
-        'The landing page grew into an app. People have accounts and post comments, so every request now needs the database. Someone just posted it to Reddit, and traffic will climb to 1,500 requests a second.',
-        '40% of those requests are **public** pages, 50% are **private** reads like someone’s own feed, and 10% are **writes**. They flow through the system differently, and the board now shows all three.',
+        'The landing page grew into an app. People have accounts and post comments, so every request now needs the database. Someone just posted it to Reddit, and traffic will climb to 1,500 requests a second on a $650 budget.',
+        '40% of requests are **public** pages, 50% are **private** reads like someone’s own feed, and 10% are **writes**. They flow through the system differently, and the board now shows all three.',
+        '**The database** is already on the board, wired from every web server. Bmazon won’t sell you a bigger one, and you can’t remove it.',
+        '**New from Bmazon: Cache.** Cache-aside, Redis style. Attach it to a web server and the server checks it first for reads. Attach it to the load balancer and it answers public pages before they reach your servers. Either way, misses and writes carry on, and the more lookups a cache sees, the better it hits.',
       ],
-    },
-    {
-      target: 'locked',
-      title: 'The database',
-      body: [
-        'One managed database, already paid for and already wired from every web server. Bmazon won’t sell you a bigger one, and you can’t remove it.',
-      ],
-    },
-    {
-      target: 'new',
-      title: 'New from Bmazon: Cache',
-      body: [
-        'Cache-aside, Redis style. Attach it to a web server and the server checks it first for reads. Attach it to the load balancer and it answers public pages before they reach your servers. Either way, misses and writes carry on, and the more lookups a cache sees, the better it hits.',
-      ],
-    },
-    {
-      target: 'hud',
-      title: 'Watch the mix',
-      body: ['Cards and wires now show reads and writes separately. Send traffic and see who gets what.'],
     },
   ],
   lesson: {
