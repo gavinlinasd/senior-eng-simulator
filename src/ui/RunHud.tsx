@@ -1,7 +1,7 @@
 import { Panel } from '@xyflow/react'
 import { Play, RotateCcw, Square } from 'lucide-react'
 import type { ClassLoad } from '../sim/types'
-import { CLASS_LABEL, classesIn } from './classes'
+import { classLabel, classesIn } from './classes'
 import { fmt, pct } from './format'
 import type { Phase } from './RunContext'
 
@@ -55,9 +55,9 @@ export function RunHud({ phase, qps, targetQps, traffic, blocked, onPlay, onStop
       {traffic && classesIn(traffic).length > 1 && (
         <table className="hud__mix">
           <tbody>
-            {classesIn(traffic).map((c) => (
+            {classesIn(traffic).map((c, _, all) => (
               <tr key={c}>
-                <td>{CLASS_LABEL[c]}</td>
+                <td>{classLabel(c, all)}</td>
                 <td>{pct(traffic[c])}%</td>
                 <td>{fmt(qps * traffic[c])} QPS</td>
               </tr>

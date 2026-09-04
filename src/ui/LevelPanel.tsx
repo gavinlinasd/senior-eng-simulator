@@ -3,7 +3,7 @@ import { GAME_NAME, GAME_TAGLINE } from './brand'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, NodeResult, Score, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
-import { classesIn } from './classes'
+import { classLabel, classesIn } from './classes'
 import { Lesson } from './Lesson'
 import { RichText } from './RichText'
 import type { Phase } from './RunContext'
@@ -91,7 +91,7 @@ export function LevelPanel({
                 {' '}
                 (
                 {classesIn(level.traffic)
-                  .map((c) => `${fmt(failedLoad[c])} ${c === 'write' ? 'writes' : `${c} reads`}`)
+                  .map((c, _, all) => `${fmt(failedLoad[c])} ${classLabel(c, all).toLowerCase()}`)
                   .join(', ')}{' '}
                 a second)
               </>

@@ -5,7 +5,7 @@ import { CATALOGUE } from '../sim/catalogue'
 import { statusOf } from '../sim/engine'
 import type { FlowNode } from './flow'
 import { fmt, pct } from './format'
-import { CLASS_SHORT, classLine } from './classes'
+import { classLine, classShort } from './classes'
 import { ICONS } from './icons'
 import { useRunState } from './RunContext'
 
@@ -32,7 +32,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
         ? 'hit ' +
           classes
             .filter((c) => c !== 'write')
-            .map((c) => `${CLASS_SHORT[c]} ${pct(r.hitRates?.[c] ?? 0)}%`)
+            .map((c) => `${classShort(c, classes)} ${pct(r.hitRates?.[c] ?? 0)}%`)
             .join(' · ')
         : classLine(r, classes)}
     </div>
