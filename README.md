@@ -17,7 +17,7 @@ Requires Node 22 or newer and pnpm.
 
 ## How it's put together
 
-- `src/sim/` is the simulation: pure functions, no React. Traffic flows down a DAG, a load balancer splits it, everything else fans out, and the lowest QPS at which any node reaches 100% is the breaking point. Fully unit-tested.
+- `src/sim/` is the simulation: pure functions, no React. Traffic comes in public reads, private reads and writes, flows down a DAG, a load balancer splits it, everything else fans out. A cache-aside cache answers the reads it's allowed to see with a hit rate that grows with its lookups, and the lowest QPS at which any node reaches 100% is the breaking point, found by scanning the ramp. Fully unit-tested, including a proof that every level has a solution.
 - `src/levels/` is one data file per level: the starting board, what's in the tray, target QPS, budget, and the tutorial steps. Adding a level is a new file plus one line in `index.ts`.
 - `src/ui/` is the React Flow board, the component tray, the level panel, the run loop, and the walkthrough.
 
