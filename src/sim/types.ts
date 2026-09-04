@@ -54,6 +54,8 @@ export interface NodeSpec {
   sink?: boolean
   /** Spare capacity on this type counts toward the score. */
   scored?: boolean
+  /** The app tier: nodes that actually handle requests and talk to the database. */
+  serves?: boolean
 }
 
 export interface SimNode {
@@ -157,6 +159,8 @@ export interface Level {
   lesson?: { title: string; body: string }
   /** Score thresholds for three and two stars. Any pass earns one. */
   stars: { three: number; two: number }
+  /** Every request needs the database: each app-tier node must be wired to one. */
+  requiresDatabase?: boolean
 }
 
 export interface Score {

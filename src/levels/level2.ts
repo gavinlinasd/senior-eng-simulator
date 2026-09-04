@@ -11,6 +11,7 @@ export const level2: Level = {
   budget: 650,
   rampMs: 5000,
   stars: { three: 450, two: 300 },
+  requiresDatabase: true,
   traffic: { public: 0.4, private: 0.5, write: 0.1 },
   palette: ['lb', 'web', 'bigweb', 'cache'],
   introduces: ['cache'],

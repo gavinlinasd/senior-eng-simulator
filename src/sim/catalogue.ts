@@ -27,6 +27,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     blurb: 'Serves the page. Cheap, but one machine only goes so far.',
     needsDownstream: false,
     scored: true,
+    serves: true,
     cacheable: ['public', 'private'],
   },
   bigweb: {
@@ -37,6 +38,7 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     blurb: 'A beefier machine. More headroom per box, more dollars per request.',
     needsDownstream: false,
     scored: true,
+    serves: true,
     cacheable: ['public', 'private'],
   },
   cache: {

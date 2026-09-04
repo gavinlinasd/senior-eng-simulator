@@ -44,6 +44,9 @@ export function validate(graph: Graph, level: Level): string[] {
       if (hasCache && !hasOnward) {
         errors.push(`Cache misses from ${n.name} have nowhere to go. Wire it onward as well.`)
       }
+      if (level.requiresDatabase && CATALOGUE[n.type].serves && !outs.some((e) => byId.get(e.to)!.type === 'db')) {
+        errors.push(`${n.name} isn't wired to the database. Every request needs it.`)
+      }
     }
   }
 

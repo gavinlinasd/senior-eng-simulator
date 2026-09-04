@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { validate } from './validate'
 import { behindLb, chain, edge, node, repeat } from './fixtures'
 import { level1 } from '../levels/level1'
+import { level2 } from '../levels/level2'
 
 describe('validate', () => {
   it('accepts the start graph and the intended solutions', () => {
@@ -38,5 +39,24 @@ describe('validate', () => {
   it('a load balancer with nothing behind it is an error', () => {
     const g = chain('lb')
     expect(validate(g, level1)).toEqual(['Load balancer lb1 has nowhere to send requests.'])
+  })
+})
+
+describe('levels with a database', () => {
+  it('flag a web server that is not wired to it, while earlier levels let servers be leaves', () => {
+    const g = behindLb('web', 'web')
+    g.nodes.push(node('db', 'db1'))
+    g.edges.push(edge('web1', 'db1'))
+    expect(validate(g, level2)).toEqual(["Web server web2 isn't wired to the database. Every request needs it."])
+    expect(validate(behindLb('web', 'web'), level1)).toEqual([])
+  })
+
+  it('a server wired only to a cache is still flagged for the database', () => {
+    const g = behindLb('web')
+    g.nodes.push(node('db', 'db1'), node('cache', 'c1'))
+    g.edges.push(edge('web1', 'c1'))
+    const errors = validate(g, level2)
+    expect(errors).toContainEqual(expect.stringContaining('have nowhere to go'))
+    expect(errors).toContainEqual(expect.stringContaining("isn't wired to the database"))
   })
 })
