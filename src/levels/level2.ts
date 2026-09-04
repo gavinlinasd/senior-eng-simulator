@@ -6,7 +6,7 @@ export const level2: Level = {
   id: 2,
   title: 'Reddit traffic',
   brief:
-    'The landing page grew into an app with accounts and comments, so every request needs the database. Someone posted it to Reddit. Traffic will climb to 1,500 requests a second, 90% reads and 10% writes. The database is one managed box that cannot be scaled.',
+    'The landing page grew into an app with accounts and comments, so every request needs the database. Someone posted it to Reddit. Traffic will climb to 1,500 requests a second: 40% public pages, 50% private reads, 10% writes. The database is one managed box that cannot be scaled.',
   targetQps: 1500,
   budget: 650,
   rampMs: 5000,
