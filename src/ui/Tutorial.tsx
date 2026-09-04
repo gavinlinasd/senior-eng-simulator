@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { IntroStep, Level, TourTarget } from '../sim/types'
 import { PROVIDER_SHORT } from './brand'
 import { ComponentCard } from './ComponentCard'
@@ -92,6 +92,38 @@ function place(rect: Rect | null, card: { width: number; height: number }, obsta
   )
 }
 
+/** Paragraphs, with runs of lines starting "- " rendered as a bullet list. */
+function renderBody(body: string[]) {
+  const out: ReactNode[] = []
+  let bullets: string[] = []
+  const flush = () => {
+    if (!bullets.length) return
+    out.push(
+      <ul key={`ul-${out.length}`} className="tour__list">
+        {bullets.map((b) => (
+          <li key={b}>
+            <RichText text={b} />
+          </li>
+        ))}
+      </ul>,
+    )
+    bullets = []
+  }
+  for (const line of body) {
+    if (line.startsWith('- ')) bullets.push(line.slice(2))
+    else {
+      flush()
+      out.push(
+        <p key={line}>
+          <RichText text={line} />
+        </p>,
+      )
+    }
+  }
+  flush()
+  return out
+}
+
 interface TutorialProps {
   steps: IntroStep[]
   /** The level, for steps that show its goal or traffic mix. */
@@ -172,11 +204,7 @@ export function Tutorial({ steps, level, index, onNext, onBack, onClose }: Tutor
           {step.title}
         </h2>
         <div className="tour__body">
-          {step.body.map((paragraph) => (
-            <p key={paragraph}>
-              <RichText text={paragraph} />
-            </p>
-          ))}
+          {renderBody(step.body)}
           {step.note && (
             <p className="tour__about">
               <RichText text={step.note} />

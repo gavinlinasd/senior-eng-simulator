@@ -35,9 +35,10 @@ export const level2 = defineLevel({
     {
       title: 'Launch day',
       body: [
-        'The app has accounts and comments now, so every request needs the database. It launches on Product Hunt today.',
-        'The database is already on the board, wired from every web server. It can’t be scaled or removed.',
-        'Requests come in two kinds now. **Reads** fetch what’s already there; **writes** change it. They flow through the system differently, and the board shows both.',
+        'Your product has more features now and needs a **database** (already on the board; unfortunately it can’t be scaled or removed).',
+        'Traffic comes in two kinds now, and the board shows both:',
+        '- **Reads**: fetch what’s already there.',
+        '- **Writes**: change it.',
       ],
       showGoal: true,
       showMix: true,

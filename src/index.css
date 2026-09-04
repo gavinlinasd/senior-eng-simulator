@@ -959,6 +959,18 @@ dialog::backdrop {
   color: var(--body);
 }
 
+.tour__list {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.tour__list li + li {
+  margin-top: 2px;
+}
+
 .tour__body .tour__about {
   margin: 12px 0 0;
   padding-top: 10px;
