@@ -210,16 +210,16 @@ export function Tutorial({ steps, level, index, onNext, onBack, onClose }: Tutor
               <RichText text={step.note} />
             </p>
           )}
-          {step.showGoal && (
-            <div className="tour__figure">
-              <div className="tour__caption">Goal</div>
-              <GoalTiles level={level} />
-            </div>
-          )}
           {step.showMix && level.traffic && (
             <div className="tour__figure">
               <div className="tour__caption">{step.mixTitle ?? 'Traffic mix'}</div>
               <TrafficMixBar traffic={level.traffic} />
+            </div>
+          )}
+          {step.showGoal && (
+            <div className="tour__figure">
+              <div className="tour__caption">Goal</div>
+              <GoalTiles level={level} />
             </div>
           )}
           {step.cards?.map((type) => (

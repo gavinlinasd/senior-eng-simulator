@@ -36,9 +36,7 @@ export const level2 = defineLevel({
       title: 'Launch day',
       body: [
         'Your product has more features now and needs a **database** (already on the board; unfortunately it can’t be scaled or removed).',
-        'Traffic comes in two kinds now, and the board shows both:',
-        '- **Reads**: fetch what’s already there.',
-        '- **Writes**: change it.',
+        'Traffic now splits into **read traffic** and **write traffic**. Read traffic is **cacheable**.',
       ],
       showGoal: true,
       showMix: true,
