@@ -22,7 +22,6 @@ export const level0 = defineLevel({
       title: 'Your site just hit the front page',
       body: [
         "You're the only engineer at a tiny startup, and someone just posted your landing page to Hacker News. Traffic will climb from nothing to 500 requests a second. Right now the whole site is one small web server.",
-        'The board is your architecture. The strip along the bottom is your cloud provider. The panel on the right has the brief, your budget, and the verdict after each run.',
       ],
       note: 'Every component has a max QPS. When any one of them hits 100%, the site is down and the run stops right there.',
     },
