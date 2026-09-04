@@ -3,6 +3,7 @@ import { GAME_NAME, GAME_TAGLINE } from './brand'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, NodeResult, Score, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
+import { classesIn } from './classes'
 import { Lesson } from './Lesson'
 import { RichText } from './RichText'
 import type { Phase } from './RunContext'
@@ -51,7 +52,7 @@ export function LevelPanel({
   onHint,
 }: LevelPanelProps) {
   const hints = level.hints ?? []
-  const showClasses = (level.traffic?.private ?? 0) > 0 || (level.traffic?.write ?? 0) > 0
+  const showClasses = classesIn(level.traffic).length > 1
   return (
     <aside className="panel">
       <div>
@@ -88,7 +89,10 @@ export function LevelPanel({
             {showClasses && (
               <>
                 {' '}
-                ({fmt(failedLoad.public)} public, {fmt(failedLoad.private)} private and {fmt(failedLoad.write)} writes
+                (
+                {classesIn(level.traffic)
+                  .map((c) => `${fmt(failedLoad[c])} ${c === 'write' ? 'writes' : `${c} reads`}`)
+                  .join(', ')}{' '}
                 a second)
               </>
             )}{' '}

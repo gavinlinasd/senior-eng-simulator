@@ -1,5 +1,6 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow, type EdgeProps } from '@xyflow/react'
 import { X } from 'lucide-react'
+import { classLine } from './classes'
 import { fmt } from './format'
 import { useRunState } from './RunContext'
 
@@ -16,7 +17,7 @@ export default function TrafficEdge({
   markerEnd,
   selected,
 }: EdgeProps) {
-  const { qps, results, phase, showClasses } = useRunState()
+  const { qps, results, phase, showClasses, classes } = useRunState()
   const { deleteElements } = useReactFlow()
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
   const r = results[target] ?? { load: 0, public: 0, private: 0, write: 0, util: 0 }
@@ -38,9 +39,7 @@ export default function TrafficEdge({
             >
               {fmt(load)} QPS
               {showClasses && (
-                <small>
-                  {fmt(r.public)} pub · {fmt(r.private)} priv · {fmt(r.write)} wr
-                </small>
+                <small>{classLine(r, classes)}</small>
               )}
             </div>
           )}

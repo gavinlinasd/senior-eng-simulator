@@ -183,7 +183,7 @@ export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: Tut
           )}
           {step.showMix && traffic && (
             <div className="tour__figure">
-              <div className="tour__caption">Traffic mix</div>
+              <div className="tour__caption">{step.mixTitle ?? 'Traffic mix'}</div>
               <TrafficMixBar traffic={traffic} />
             </div>
           )}

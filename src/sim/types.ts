@@ -128,6 +128,8 @@ export interface IntroStep {
   wait?: string
   /** Show the level's traffic mix as a bar. */
   showMix?: boolean
+  /** Caption over the mix bar. Default "Traffic mix". */
+  mixTitle?: string
   /** Component cards to show, as they appear in the tray. */
   cards?: NodeType[]
 }

@@ -1,6 +1,7 @@
 import { Panel } from '@xyflow/react'
 import { Play, RotateCcw, Square } from 'lucide-react'
 import type { ClassLoad } from '../sim/types'
+import { CLASS_LABEL, classesIn } from './classes'
 import { fmt, pct } from './format'
 import type { Phase } from './RunContext'
 
@@ -51,20 +52,14 @@ export function RunHud({ phase, qps, targetQps, traffic, blocked, onPlay, onStop
       <div className="hud__qps">
         {fmt(qps)} / {fmt(targetQps)} QPS
       </div>
-      {traffic && (traffic.private > 0 || traffic.write > 0) && (
+      {traffic && classesIn(traffic).length > 1 && (
         <table className="hud__mix">
           <tbody>
-            {(
-              [
-                ['Public reads', traffic.public],
-                ['Private reads', traffic.private],
-                ['Writes', traffic.write],
-              ] as const
-            ).map(([label, share]) => (
-              <tr key={label}>
-                <td>{label}</td>
-                <td>{pct(share)}%</td>
-                <td>{fmt(qps * share)} QPS</td>
+            {classesIn(traffic).map((c) => (
+              <tr key={c}>
+                <td>{CLASS_LABEL[c]}</td>
+                <td>{pct(traffic[c])}%</td>
+                <td>{fmt(qps * traffic[c])} QPS</td>
               </tr>
             ))}
           </tbody>

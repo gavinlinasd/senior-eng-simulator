@@ -5,13 +5,14 @@ import { CATALOGUE } from '../sim/catalogue'
 import { statusOf } from '../sim/engine'
 import type { FlowNode } from './flow'
 import { fmt, pct } from './format'
+import { CLASS_SHORT, classLine } from './classes'
 import { ICONS } from './icons'
 import { useRunState } from './RunContext'
 
 const SEGMENTS = 10
 
 function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
-  const { qps, results, failedNodeId, showClasses } = useRunState()
+  const { qps, results, failedNodeId, showClasses, classes } = useRunState()
   const { deleteElements } = useReactFlow()
   const spec = CATALOGUE[data.simType]
   const Icon = ICONS[data.simType]
@@ -25,17 +26,15 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
     data.locked ? 'is-locked' : '',
   ].join(' ')
   const isCache = spec.hitCurve !== undefined
-  const classes = showClasses ? (
+  const classLineEl = showClasses ? (
     <div className="sim-node__classes">
-      {isCache ? (
-        <>
-          hit pub {pct(r.hitRates?.public ?? 0)}% · priv {pct(r.hitRates?.private ?? 0)}%
-        </>
-      ) : (
-        <>
-          {fmt(r.public)} pub · {fmt(r.private)} priv · {fmt(r.write)} wr
-        </>
-      )}
+      {isCache
+        ? 'hit ' +
+          classes
+            .filter((c) => c !== 'write')
+            .map((c) => `${CLASS_SHORT[c]} ${pct(r.hitRates?.[c] ?? 0)}%`)
+            .join(' · ')
+        : classLine(r, classes)}
     </div>
   ) : null
   // A cache shows its hit rate where other components show CPU.
@@ -72,7 +71,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
             <div className="sim-node__qps">
               {fmt(qps)} <span>QPS</span>
             </div>
-            {classes}
+            {classLineEl}
           </>
         ) : (
           <>
@@ -95,7 +94,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
               </div>
               <span className="sim-node__pct">{isCache && r.load === 0 ? '—' : `${pct(meterValue)}%`}</span>
             </div>
-            {classes}
+            {classLineEl}
           </>
         )}
       </div>

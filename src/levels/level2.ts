@@ -6,10 +6,10 @@ export const level2 = defineLevel({
   id: 2,
   title: 'Launch on Product Hunt',
   brief:
-    'The landing page grew into an app with accounts and comments, so every request needs the database. Today it launches on Product Hunt. Traffic will climb to 1,500 requests a second: 20% public pages, 70% private reads, 10% writes. The database is one managed box that cannot be scaled.',
+    'The landing page grew into an app with accounts and comments, so every request needs the database. Today it launches on Product Hunt. Traffic will climb to 1,500 requests a second, 90% reads and 10% writes. The database is one managed box that cannot be scaled.',
   targetQps: 1500,
   budget: 650,
-  traffic: { public: 0.2, private: 0.7, write: 0.1 },
+  traffic: { public: 0, private: 0.9, write: 0.1 },
   requiresDatabase: true,
   introduces: ['cache'],
   start: board('users', 'lb', web(2), DATABASE),
@@ -28,7 +28,7 @@ export const level2 = defineLevel({
   stars: { three: 450, two: 300 },
   hints: [
     'Watch which card turns red first. The database receives everything the web servers receive, however many servers there are.',
-    'Look at the traffic mix in the HUD. Reads can be answered from a cache; writes can’t. Most of this traffic is reads.',
+    'Look at the traffic mix in the HUD. Reads can be answered from a cache; writes can’t. Nine in ten requests are reads.',
     'Attach a cache to each web server and keep the database wire. Reads mostly stop at the cache; misses and writes still go through.',
   ],
   intro: [
@@ -37,8 +37,10 @@ export const level2 = defineLevel({
       body: [
         'The app has accounts and comments now, so every request needs the database. It launches on Product Hunt today: 1,500 requests a second on a $650 budget.',
         'The database is already on the board, wired from every web server. It can’t be scaled or removed.',
+        'Requests come in two kinds now. **Reads** fetch what’s already there; **writes** change it. They flow through the system differently, and the board shows both.',
       ],
       showMix: true,
+      mixTitle: 'New: traffic mix',
       cards: ['cache'],
     },
   ],

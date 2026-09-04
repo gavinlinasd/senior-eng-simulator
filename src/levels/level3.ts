@@ -13,6 +13,9 @@ export const level3 = defineLevel({
   budget: 850,
   traffic: { public: 0.5, private: 0.4, write: 0.1 },
   requiresDatabase: true,
+  introNotes: [
+    '**New: public pages.** Half the traffic is now the landing page and images, which need no sign-in. The rest is personalized feeds and writes.',
+  ],
   start: board('users', 'lb', web(6), ['cache', DATABASE]),
   solutions: [
     // edge cache on the balancer plus the shared app cache, sized up to the budget

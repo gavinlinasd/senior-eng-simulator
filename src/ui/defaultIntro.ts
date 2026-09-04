@@ -1,4 +1,5 @@
 import type { IntroStep, Level } from '../sim/types'
+import { classesIn } from './classes'
 import { fmt } from './format'
 
 /**
@@ -9,7 +10,7 @@ import { fmt } from './format'
  */
 export function introFor(level: Level): IntroStep[] {
   if (level.intro) return level.intro
-  const hasMix = Boolean(level.traffic && (level.traffic.private > 0 || level.traffic.write > 0))
+  const hasMix = classesIn(level.traffic).length > 1
   return [
     {
       title: `Level ${level.id}: ${level.title}`,

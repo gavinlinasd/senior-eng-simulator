@@ -19,6 +19,7 @@ import type { Graph, NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
 import { GAME_NAME } from './ui/brand'
+import { classesIn } from './ui/classes'
 import { introFor } from './ui/defaultIntro'
 import {
   FIT_VIEW_OPTIONS,
@@ -144,10 +145,11 @@ function Game() {
 
   const run = useTrafficRun(level, bp, onOutcome)
   const results = useMemo(() => evaluate(graph, run.qps, traffic), [graph, run.qps, traffic])
-  const showClasses = traffic.private > 0 || traffic.write > 0
+  const classes = useMemo(() => classesIn(traffic), [traffic])
+  const showClasses = classes.length > 1
   const runState = useMemo<RunState>(
-    () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId, showClasses }),
-    [run.phase, run.qps, results, run.failedNodeId, showClasses],
+    () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId, showClasses, classes }),
+    [run.phase, run.qps, results, run.failedNodeId, showClasses, classes],
   )
 
   // The pass modal shows once per run; dismissing it remembers which run was dismissed.
