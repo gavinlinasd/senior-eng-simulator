@@ -23,8 +23,8 @@ export function GoalTiles({ level }: { level: Level }) {
       <div className="goal__tile">
         <ShieldCheck size={22} aria-hidden />
         <div>
-          <div className="goal__value">Under 100%</div>
-          <div className="goal__label">Every component</div>
+          <div className="goal__value">100%</div>
+          <div className="goal__label">Stay under, everywhere</div>
         </div>
       </div>
     </div>
