@@ -6,9 +6,9 @@ const edge = { type: 'cache' as const, id: 'edge', name: 'Edge cache', from: ['l
 /** Same tools as level 2, five times the traffic. No new unlock, no hand-holding. */
 export const level3 = defineLevel({
   id: 3,
-  title: 'Front page of the internet',
+  title: 'Top of search and chat',
   brief:
-    'Now it’s on the front page of Reddit. Traffic will climb to 3,000 requests a second: half of it the public landing page and images, 40% personalized feeds, 10% writes. Same tools, same database.',
+    'You’ve made it. Your product is a top result on search and in chat assistants, and the traffic is big and steady: 3,000 requests a second, half of it the public landing page and images, 40% personalized feeds, 10% writes. Same tools, same database.',
   targetQps: 3000,
   budget: 850,
   traffic: { public: 0.5, private: 0.4, write: 0.1 },
