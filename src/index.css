@@ -95,11 +95,60 @@ button:focus-visible,
   --c: var(--over);
 }
 
+/* ---- one silhouette per component type ---- */
+
 .sim-node--users {
   width: 150px;
   border-radius: 999px;
   border-left-width: 2px;
   padding-left: 16px;
+}
+
+/* servers: rack units, square corners, a rail on the left; the large one has a double rail */
+.sim-node--web,
+.sim-node--bigweb {
+  border-radius: 4px;
+}
+
+.sim-node--bigweb {
+  border-left-width: 12px;
+  border-left-style: double;
+}
+
+/* load balancer: a leaf, cut on opposite corners like a splitter */
+.sim-node--lb {
+  border-radius: 26px 6px 26px 6px;
+  border-left-width: 2px;
+  padding-left: 18px;
+}
+
+/* cache: dashed outline, memory that can vanish */
+.sim-node--cache {
+  border-style: dashed;
+  border-left-width: 2px;
+  border-radius: 14px;
+  padding-left: 16px;
+}
+
+/* database: a cylinder with a lid */
+.sim-node--db {
+  border-left-width: 2px;
+  border-radius: 50% / 18px;
+  padding: 18px 12px 12px 18px;
+  overflow: visible;
+}
+
+.sim-node--db::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 22px;
+  border: 2px solid var(--c);
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
 }
 
 .sim-node.is-failed {
