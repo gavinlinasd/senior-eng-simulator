@@ -10,7 +10,7 @@ export const level2: Level = {
   targetQps: 1500,
   budget: 650,
   rampMs: 5000,
-  traffic: { read: 0.9, write: 0.1 },
+  traffic: { public: 0.4, private: 0.5, write: 0.1 },
   palette: ['lb', 'web', 'bigweb', 'cache'],
   introduces: ['cache'],
   start: {
@@ -38,7 +38,7 @@ export const level2: Level = {
       title: 'Reddit found you',
       body: [
         'The landing page grew into an app. People have accounts and post comments, so every request now needs the database. Someone just posted it to Reddit, and traffic will climb to 1,500 requests a second.',
-        '90% of those requests are **reads** and 10% are **writes**. They flow through the system differently, and the board now shows both.',
+        '40% of those requests are **public** pages, 50% are **private** reads like someone’s own feed, and 10% are **writes**. They flow through the system differently, and the board now shows all three.',
       ],
     },
     {
@@ -52,7 +52,7 @@ export const level2: Level = {
       target: 'new',
       title: 'New from Bmazon: Cache',
       body: [
-        'Cache-aside, Redis style. Wire a web server to it and the server checks it first. The cache answers most reads, and only the misses and the writes go on down the server’s other wires.',
+        'Cache-aside, Redis style. Attach it to a web server and the server checks it first for reads. Attach it to the load balancer and it answers public pages before they reach your servers. Either way, misses and writes carry on, and the more lookups a cache sees, the better it hits.',
       ],
     },
     {
@@ -63,6 +63,6 @@ export const level2: Level = {
   ],
   lesson: {
     title: 'You just added a read cache',
-    body: 'Most traffic was reads of the same data, so a **cache-aside** cache answered them from memory and the database only saw misses and writes. The database is usually the thing that falls over, because it’s the one part you can’t just add more of. That’s why the cache went next to the web servers, in front of the database, and not in front of the app.',
+    body: 'Most traffic was reads of the same data, so a **cache-aside** cache answered them from memory and the database only saw misses and writes. The database is usually the thing that falls over, because it’s the one part you can’t just add more of. A cache on the load balancer only ever serves public pages, since it never sees who’s asking, so private reads still need a cache behind the app.',
   },
 }

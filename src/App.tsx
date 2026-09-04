@@ -13,7 +13,7 @@ import {
 import { LEVELS } from './levels'
 import { carryInto } from './sim/carry'
 import { CATALOGUE, costOf } from './sim/catalogue'
-import { ALL_READS, breakingPoint, computeShares, evaluate } from './sim/engine'
+import { ALL_PUBLIC, breakingPoint, evaluate } from './sim/engine'
 import { score as scoreOf } from './sim/score'
 import type { Graph, NodeType } from './sim/types'
 import { validate } from './sim/validate'
@@ -75,13 +75,17 @@ function Game() {
     document.title = `Senior Eng Simulator · Level ${level.id}: ${level.title}`
   }, [level])
 
-  // Derived sim state. Recomputed on every edit; the model is linear so this is cheap.
+  // Derived sim state. The graph changes identity on every drag frame, so the
+  // breaking-point scan (a few hundred evaluations) is keyed on the structure
+  // alone; everything else is cheap enough to recompute.
   const graph = useMemo(() => toGraph(nodes, edges), [nodes, edges])
-  const traffic = level.traffic ?? ALL_READS
-  const shares = useMemo(() => computeShares(graph, traffic), [graph, traffic])
+  const traffic = level.traffic ?? ALL_PUBLIC
+  const structure =
+    nodes.map((n) => `${n.id}:${n.data.simType}`).join(',') + '|' + edges.map((e) => `${e.source}>${e.target}`).join(',')
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `structure` captures everything the scan depends on
+  const bp = useMemo(() => breakingPoint(graph, traffic, level.targetQps), [structure, traffic, level.targetQps])
   const errors = useMemo(() => validate(graph, level), [graph, level])
   const spend = costOf(graph)
-  const bp = useMemo(() => breakingPoint(graph, shares), [graph, shares])
 
   // ----- walkthrough -----
   // Index of the current step, or null when closed. A ref mirrors it so run
@@ -119,8 +123,8 @@ function Game() {
   )
 
   const run = useTrafficRun(level, bp, onOutcome)
-  const results = useMemo(() => evaluate(graph, shares, run.qps), [graph, shares, run.qps])
-  const showClasses = traffic.write > 0
+  const results = useMemo(() => evaluate(graph, run.qps, traffic), [graph, run.qps, traffic])
+  const showClasses = traffic.private > 0 || traffic.write > 0
   const runState = useMemo<RunState>(
     () => ({ phase: run.phase, qps: run.qps, results, failedNodeId: run.failedNodeId, showClasses }),
     [run.phase, run.qps, results, run.failedNodeId, showClasses],
@@ -224,7 +228,8 @@ function Game() {
 
   // ----- verdict -----
   const failedNode = run.failedNodeId ? (graph.nodes.find((n) => n.id === run.failedNodeId) ?? null) : null
-  const score = run.phase === 'passed' ? scoreOf(graph, shares, level) : null
+  const failedLoad = failedNode && bp ? evaluate(graph, bp.qps, traffic)[failedNode.id] : null
+  const score = run.phase === 'passed' ? scoreOf(graph, level) : null
 
   return (
     <RunContext.Provider value={runState}>
@@ -255,8 +260,8 @@ function Game() {
           errors={errors}
           phase={run.phase}
           failedNode={failedNode}
+          failedLoad={failedLoad}
           breaking={bp}
-          shares={shares}
           score={score}
           selectionLabel={selectionLabel}
           onRemoveSelected={removeSelected}

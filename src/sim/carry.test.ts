@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { carryInto } from './carry'
-import { breakingPoint, computeShares } from './engine'
+import { breakingPoint } from './engine'
 import { validate } from './validate'
 import { behindLb, repeat } from './fixtures'
 import { level1 } from '../levels/level1'
@@ -20,9 +20,7 @@ describe('carryInto', () => {
     expect(db.x).toBeGreaterThan(Math.max(...board.nodes.map((n) => n.x)))
     expect(g.edges.filter((e) => e.to === db.id).map((e) => e.from).sort()).toEqual(['bigweb1', 'web1', 'web2'])
     expect(validate(g, level2)).toEqual([])
-    const bp = breakingPoint(g, computeShares(g, level2.traffic))!
-    expect(bp.nodeId).toBe(db.id)
-    expect(bp.qps).toBeCloseTo(500, 6)
+    expect(breakingPoint(g, level2.traffic!, level2.targetQps)).toEqual({ qps: 500, nodeId: db.id })
   })
 
   it('does not mutate the board it was given', () => {

@@ -8,7 +8,7 @@ export interface RunState {
   qps: number
   results: Evaluation
   failedNodeId: string | null
-  /** Show reads and writes separately (the level has writes). */
+  /** Show the traffic classes separately (the level has private reads or writes). */
   showClasses: boolean
 }
 

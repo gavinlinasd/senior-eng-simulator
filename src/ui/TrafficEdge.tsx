@@ -19,7 +19,7 @@ export default function TrafficEdge({
   const { qps, results, phase, showClasses } = useRunState()
   const { deleteElements } = useReactFlow()
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
-  const r = results[target] ?? { load: 0, read: 0, write: 0, util: 0 }
+  const r = results[target] ?? { load: 0, public: 0, private: 0, write: 0, util: 0 }
   const load = r.load
   const active = qps > 0
   const flowing = phase === 'running' || phase === 'passed'
@@ -39,7 +39,7 @@ export default function TrafficEdge({
               {fmt(load)} QPS
               {showClasses && (
                 <small>
-                  {fmt(r.read)} R · {fmt(r.write)} W
+                  {fmt(r.public)} pub · {fmt(r.private)} priv · {fmt(r.write)} wr
                 </small>
               )}
             </div>

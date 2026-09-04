@@ -1,7 +1,5 @@
 import type { Graph, NodeSpec, NodeType } from './types'
 
-const APP_TIER: NodeType[] = ['web', 'bigweb']
-
 /** Node type registry. Adding a type is one entry here plus an icon in the UI. */
 export const CATALOGUE: Record<NodeType, NodeSpec> = {
   users: {
@@ -19,24 +17,27 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     distribute: 'split',
     blurb: 'One address in. Spreads requests **evenly** (Round Robin) across everything wired behind it.',
     needsDownstream: true,
+    cacheable: ['public'],
   },
   web: {
     label: 'Web server',
-    scored: true,
     capacity: 300,
     cost: 50,
     distribute: 'fanout',
     blurb: 'Serves the page. Cheap, but one machine only goes so far.',
     needsDownstream: false,
+    scored: true,
+    cacheable: ['public', 'private'],
   },
   bigweb: {
     label: 'Large web server',
-    scored: true,
     capacity: 600,
     cost: 120,
     distribute: 'fanout',
     blurb: 'A beefier machine. More headroom per box, more dollars per request.',
     needsDownstream: false,
+    scored: true,
+    cacheable: ['public', 'private'],
   },
   cache: {
     label: 'Cache',
@@ -44,25 +45,25 @@ export const CATALOGUE: Record<NodeType, NodeSpec> = {
     cost: 150,
     distribute: 'fanout',
     blurb:
-      'Cache-aside, Redis style. A web server wired to it checks it first: it answers **85% of reads**. Misses and all writes go on down the server’s other wires.',
+      'Cache-aside, Redis style. On a web server it answers that server’s reads. On the load balancer it answers **public** pages before they reach your servers. The more lookups it sees, the better it hits.',
     needsDownstream: false,
-    absorbs: { read: 0.85 },
+    hitCurve: { baseLoad: 500, baseRate: 0.8, perDoubling: 0.1, max: 0.95 },
     sink: true,
     acceptsFrom: {
-      types: APP_TIER,
-      reason: 'Requests need a signed-in user before anything can be served, and only web servers do that.',
+      types: ['lb', 'web', 'bigweb'],
+      reason: 'A cache only answers lookups. Attach it to a load balancer or a web server.',
     },
   },
   db: {
     label: 'Database',
-    scored: true,
     capacity: 500,
     cost: 0,
     distribute: 'fanout',
     blurb: 'One managed database. Every cache miss and every write lands here. It cannot be scaled.',
     needsDownstream: false,
+    scored: true,
     sink: true,
-    acceptsFrom: { types: APP_TIER, reason: 'Only the app talks to the database.' },
+    acceptsFrom: { types: ['web', 'bigweb'], reason: 'Only the app talks to the database.' },
   },
 }
 

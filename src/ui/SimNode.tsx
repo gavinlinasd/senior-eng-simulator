@@ -15,7 +15,7 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   const { deleteElements } = useReactFlow()
   const spec = CATALOGUE[data.simType]
   const Icon = ICONS[data.simType]
-  const r = results[id] ?? { load: 0, read: 0, write: 0, util: 0 }
+  const r = results[id] ?? { load: 0, public: 0, private: 0, write: 0, util: 0 }
   const isUsers = data.simType === 'users'
   const status = isUsers ? 'users' : statusOf(r.util)
   const lit = Math.round(Math.min(1, r.util) * SEGMENTS)
@@ -27,7 +27,15 @@ function SimNodeCard({ id, data }: NodeProps<FlowNode>) {
   ].join(' ')
   const classes = showClasses ? (
     <div className="sim-node__classes">
-      {fmt(r.read)} R · {fmt(r.write)} W
+      {r.hitRate !== undefined ? (
+        <>
+          {fmt(r.load)} lookups · hit {pct(r.hitRate)}%
+        </>
+      ) : (
+        <>
+          {fmt(r.public)} pub · {fmt(r.private)} priv · {fmt(r.write)} wr
+        </>
+      )}
     </div>
   ) : null
 

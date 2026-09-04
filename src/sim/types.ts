@@ -2,11 +2,27 @@
 
 export type NodeType = 'users' | 'lb' | 'web' | 'bigweb' | 'cache' | 'db'
 
-/** Requests come in two classes that flow through the system differently. */
-export type TrafficClass = 'read' | 'write'
+/**
+ * Requests come in three classes that flow through the system differently.
+ * Public reads (landing page, images) can be served by any cache. Private
+ * reads (your feed) need a signed-in user, so only a cache behind the app can
+ * serve them. Writes always reach the database.
+ */
+export type TrafficClass = 'public' | 'private' | 'write'
 export interface ClassLoad {
-  read: number
+  public: number
+  private: number
   write: number
+}
+
+/** Cache hit rate as a function of the lookups flowing through it, on a log curve. */
+export interface HitCurve {
+  /** Lookups per second at which the hit rate equals baseRate. */
+  baseLoad: number
+  baseRate: number
+  /** Added to the hit rate each time the lookups double. */
+  perDoubling: number
+  max: number
 }
 
 /** How a node passes load to its outgoing edges. */
@@ -24,11 +40,13 @@ export interface NodeSpec {
   /** Validation error if this node has no outgoing edges. */
   needsDownstream: boolean
   /**
-   * Cache-aside: fraction of each class this node answers on behalf of the
-   * nodes wired into it, so that much never flows down their other wires.
-   * The node itself receives the full class as lookups.
+   * Makes this a cache-aside cache. Nodes wired into it send it their reads
+   * as lookups; the hit rate depends on the total lookups it sees, and hits
+   * never flow down the upstream node's other wires.
    */
-  absorbs?: Partial<ClassLoad>
+  hitCurve?: HitCurve
+  /** Which classes a cache attached to this node type is allowed to serve. */
+  cacheable?: TrafficClass[]
   /** Node types allowed to wire into this one, with the reason shown when violated. Absent = anything. */
   acceptsFrom?: { types: NodeType[]; reason: string }
   /** True if requests stop here: no outgoing wires. */
@@ -59,14 +77,15 @@ export interface Graph {
   edges: SimEdge[]
 }
 
-/** Fraction of user traffic that lands on each node, by class, keyed by node id. */
-export type Shares = Record<string, ClassLoad>
+/** Requests per second arriving at each node, by class, keyed by node id. */
+export type Loads = Record<string, ClassLoad>
 
-export interface NodeResult {
+export interface NodeResult extends ClassLoad {
+  /** Total requests per second. For a cache, its lookups. */
   load: number
-  read: number
-  write: number
   util: number
+  /** Caches only: fraction of lookups answered at this load. */
+  hitRate?: number
 }
 
 export type Evaluation = Record<string, NodeResult>
@@ -107,7 +126,7 @@ export interface Level {
   targetQps: number
   budget: number
   rampMs: number
-  /** Read/write mix of user traffic, fractions summing to 1. Default: all reads. */
+  /** Mix of user traffic by class, fractions summing to 1. Default: all public reads. */
   traffic?: ClassLoad
   /** Node types the player can add. */
   palette: NodeType[]

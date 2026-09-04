@@ -8,7 +8,7 @@ interface RunHudProps {
   phase: Phase
   qps: number
   targetQps: number
-  /** Read/write mix, shown when the level has writes. */
+  /** Traffic mix, shown when the level has private reads or writes. */
   traffic?: ClassLoad
   blocked: boolean
   onPlay: () => void
@@ -50,9 +50,9 @@ export function RunHud({ phase, qps, targetQps, traffic, blocked, onPlay, onStop
       </div>
       <div className="hud__qps">
         {fmt(qps)} / {fmt(targetQps)} QPS
-        {traffic && traffic.write > 0 && (
+        {traffic && (traffic.private > 0 || traffic.write > 0) && (
           <span className="hud__mix">
-            {pct(traffic.read)}% reads · {pct(traffic.write)}% writes
+            {pct(traffic.public)}% public · {pct(traffic.private)}% private · {pct(traffic.write)}% writes
           </span>
         )}
       </div>

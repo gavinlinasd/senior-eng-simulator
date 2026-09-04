@@ -1,5 +1,5 @@
 import { CATALOGUE } from './catalogue'
-import type { BreakingPoint, ClassLoad, Evaluation, Graph, Shares, Status } from './types'
+import type { BreakingPoint, ClassLoad, Evaluation, Graph, HitCurve, Loads, Status, TrafficClass } from './types'
 
 /** Utilization at which a node turns amber. Staying under this everywhere earns the score bonus. */
 export const WARN_AT = 0.8
@@ -8,9 +8,12 @@ export const RED_AT = 0.9
 /** Utilization at which a node is overloaded and the run stops. */
 export const FAIL_AT = 1
 
-export const ALL_READS: ClassLoad = { read: 1, write: 0 }
+export const ALL_PUBLIC: ClassLoad = { public: 1, private: 0, write: 0 }
+export const CLASSES: TrafficClass[] = ['public', 'private', 'write']
 
-export const total = (c: ClassLoad) => c.read + c.write
+export const zero = (): ClassLoad => ({ public: 0, private: 0, write: 0 })
+export const total = (c: ClassLoad) => c.public + c.private + c.write
+export const reads = (c: ClassLoad) => c.public + c.private
 
 /**
  * Kahn's algorithm. Returns null if the graph has a cycle.
@@ -39,94 +42,158 @@ export function topoOrder(graph: Graph): string[] | null {
   return order.length === graph.nodes.length ? order : null
 }
 
+/** Hit rate of a cache seeing this many lookups per second. */
+export function hitRate(curve: HitCurve, lookups: number): number {
+  if (lookups <= 0) return 0
+  const h = curve.baseRate + curve.perDoubling * Math.log2(lookups / curve.baseLoad)
+  return Math.min(curve.max, Math.max(0, h))
+}
+
+export interface LoadResult {
+  loads: Loads
+  /** Hit rate of each cache at this load. */
+  hits: Record<string, number>
+}
+
 /**
- * Fraction of user traffic that lands on each node, by class. Walks the DAG in
- * topological order. A "split" node divides its share across outgoing edges, a
- * "fanout" node sends its full share down each. A neighbour that absorbs a
- * class (a cache-aside cache) receives that class as lookups and the absorbed
- * fraction never flows down the node's other wires. Returns null on a cycle.
+ * Requests per second arriving at every node, by class, when users send `qps`.
+ *
+ * Walks the DAG in topological order. A "split" node divides what it received
+ * across its outgoing wires, a "fanout" node sends all of it down each. A cache
+ * wired from a node receives, as lookups, the classes that node type may cache;
+ * the cache's hit rate comes from its total lookups from every node feeding it,
+ * so the walk resolves a cache once all of its feeders have run and only then
+ * sends each feeder's misses and writes down the feeder's other wires.
+ *
+ * Returns null on a cycle.
  */
-export function computeShares(graph: Graph, traffic: ClassLoad = ALL_READS): Shares | null {
+export function computeLoads(graph: Graph, qps: number, traffic: ClassLoad = ALL_PUBLIC): LoadResult | null {
   const order = topoOrder(graph)
   if (!order) return null
   const byId = new Map(graph.nodes.map((n) => [n.id, n]))
-  const shares: Shares = {}
-  for (const n of graph.nodes) shares[n.id] = n.type === 'users' ? { ...traffic } : { read: 0, write: 0 }
+  const isCache = (id: string) => CATALOGUE[byId.get(id)!.type].hitCurve !== undefined
+  const outsOf = (id: string) => graph.edges.filter((e) => e.from === id && byId.has(e.to))
 
-  for (const id of order) {
-    const outs = graph.edges.filter((e) => e.from === id && byId.has(e.to))
-    if (outs.length === 0) continue
-    const node = byId.get(id)!
-    const s = shares[id]
+  // Caches are sinks, so pulling each one forward to just after its last feeder
+  // keeps the order valid and guarantees it resolves before its feeders' other
+  // targets are processed.
+  const walk = order.filter((id) => !isCache(id))
+  for (const cacheId of order.filter(isCache)) {
+    const feeders = graph.edges.filter((e) => e.to === cacheId).map((e) => e.from)
+    const at = feeders.length ? Math.max(...feeders.map((f) => walk.indexOf(f))) + 1 : 0
+    walk.splice(at, 0, cacheId)
+  }
 
-    // Cache-aside neighbours take their class as lookups; the rest continues on.
-    const absorbed: ClassLoad = { read: 0, write: 0 }
-    const onward = outs.filter((e) => {
-      const absorbs = CATALOGUE[byId.get(e.to)!.type].absorbs
-      if (!absorbs) return true
-      const target = shares[e.to]
-      if (absorbs.read !== undefined) {
-        target.read += s.read
-        absorbed.read = Math.max(absorbed.read, s.read * absorbs.read)
-      }
-      if (absorbs.write !== undefined) {
-        target.write += s.write
-        absorbed.write = Math.max(absorbed.write, s.write * absorbs.write)
-      }
-      return false
-    })
-    if (onward.length === 0) continue
-
-    const remaining: ClassLoad = { read: s.read - absorbed.read, write: s.write - absorbed.write }
-    const divisor = CATALOGUE[node.type].distribute === 'split' ? onward.length : 1
-    for (const e of onward) {
-      shares[e.to].read += remaining.read / divisor
-      shares[e.to].write += remaining.write / divisor
+  const loads: Loads = {}
+  for (const n of graph.nodes) loads[n.id] = zero()
+  for (const n of graph.nodes) {
+    if (n.type === 'users') {
+      loads[n.id] = { public: traffic.public * qps, private: traffic.private * qps, write: traffic.write * qps }
     }
   }
-  return shares
+
+  const hits: Record<string, number> = {}
+  // Feeders waiting on caches: how many of their caches are unresolved, and what to do once none are.
+  const pending = new Map<string, { remaining: number; flush: () => void }>()
+  const waitingOn = new Map<string, string[]>()
+
+  const distribute = (fromId: string, amount: ClassLoad, targets: string[]) => {
+    const divisor = CATALOGUE[byId.get(fromId)!.type].distribute === 'split' ? targets.length : 1
+    for (const t of targets) for (const cls of CLASSES) loads[t][cls] += amount[cls] / divisor
+  }
+
+  for (const id of walk) {
+    const node = byId.get(id)!
+    if (isCache(id)) {
+      hits[id] = hitRate(CATALOGUE[node.type].hitCurve!, reads(loads[id]))
+      for (const feeder of waitingOn.get(id) ?? []) {
+        const p = pending.get(feeder)!
+        if (--p.remaining === 0) p.flush()
+      }
+      continue
+    }
+
+    const outs = outsOf(id)
+    const cacheOuts = outs.filter((e) => isCache(e.to))
+    const onward = outs.filter((e) => !isCache(e.to)).map((e) => e.to)
+    const arrived = { ...loads[id] }
+    if (cacheOuts.length === 0) {
+      if (onward.length) distribute(id, arrived, onward)
+      continue
+    }
+
+    const cacheable = CATALOGUE[node.type].cacheable ?? []
+    for (const e of cacheOuts) {
+      for (const cls of cacheable) loads[e.to][cls] += arrived[cls]
+      waitingOn.set(e.to, [...(waitingOn.get(e.to) ?? []), id])
+    }
+    pending.set(id, {
+      remaining: cacheOuts.length,
+      flush: () => {
+        if (!onward.length) return
+        const best = Math.max(...cacheOuts.map((e) => hits[e.to]))
+        const left = { ...arrived }
+        for (const cls of cacheable) left[cls] = arrived[cls] * (1 - best)
+        distribute(id, left, onward)
+      },
+    })
+  }
+
+  return { loads, hits }
 }
 
-/** Load and utilization of every node at a given QPS. The model is linear: load = share × qps. */
-export function evaluate(graph: Graph, shares: Shares | null, qps: number): Evaluation {
+/** Load and utilization of every node at a given QPS. Empty loads (a cycle) evaluate to zero everywhere. */
+export function evaluate(graph: Graph, qps: number, traffic: ClassLoad = ALL_PUBLIC): Evaluation {
+  const result = computeLoads(graph, qps, traffic)
+  const hits = result?.hits ?? {}
   const out: Evaluation = {}
   for (const n of graph.nodes) {
-    const s = shares?.[n.id] ?? { read: 0, write: 0 }
-    const read = s.read * qps
-    const write = s.write * qps
-    const load = read + write
+    const c = result?.loads[n.id] ?? zero()
+    const load = total(c)
     const cap = CATALOGUE[n.type].capacity
-    out[n.id] = { load, read, write, util: Number.isFinite(cap) ? load / cap : 0 }
+    out[n.id] = { ...c, load, util: Number.isFinite(cap) ? load / cap : 0 }
+    if (n.id in hits) out[n.id].hitRate = hits[n.id]
   }
   return out
 }
 
-/** Lowest QPS at which some node reaches 100%, and which node. Null if nothing can saturate. */
-export function breakingPoint(graph: Graph, shares: Shares | null): BreakingPoint | null {
-  let best: BreakingPoint | null = null
-  for (const n of graph.nodes) {
-    const cap = CATALOGUE[n.type].capacity
-    const s = shares ? total(shares[n.id]) : 0
-    if (!Number.isFinite(cap) || s <= 0) continue
-    const qps = (cap * FAIL_AT) / s
-    if (!best || qps < best.qps) best = { qps, nodeId: n.id }
-  }
-  return best
+function overloadedAt(graph: Graph, q: number, traffic: ClassLoad): string | null {
+  const r = evaluate(graph, q, traffic)
+  for (const n of graph.nodes) if (r[n.id].util >= FAIL_AT) return n.id
+  return null
 }
 
-/** Relative slack so float noise from summing split shares can't flip a verdict. */
-const EPSILON = 1e-9
+/**
+ * Lowest whole QPS, from 1 to maxQps, at which some node reaches 100%, and
+ * which node. Null if nothing does within that range. Cache hit rates change
+ * with load, so this is a scan rather than a division: coarse steps first,
+ * then the bracket that crossed is walked one QPS at a time.
+ */
+export function breakingPoint(graph: Graph, traffic: ClassLoad, maxQps: number): BreakingPoint | null {
+  if (!topoOrder(graph)) return null
+  const step = Math.max(1, Math.floor(maxQps / 200))
+  let prev = 0
+  for (let q = step; ; q = Math.min(q + step, maxQps)) {
+    if (overloadedAt(graph, q, traffic)) {
+      for (let fine = prev + 1; fine <= q; fine++) {
+        const nodeId = overloadedAt(graph, fine, traffic)
+        if (nodeId) return { qps: fine, nodeId }
+      }
+    }
+    if (q >= maxQps) return null
+    prev = q
+  }
+}
 
 /** A design passes when nothing reaches 100% at or before the target. */
 export function passes(bp: BreakingPoint | null, targetQps: number): boolean {
-  return bp === null || bp.qps > targetQps * (1 + EPSILON)
+  return bp === null || bp.qps > targetQps
 }
 
 /** Highest utilization across all nodes at a given QPS. */
-export function peakUtilization(graph: Graph, shares: Shares | null, qps: number): number {
-  const results = evaluate(graph, shares, qps)
+export function peakUtilization(graph: Graph, qps: number, traffic: ClassLoad): number {
   let peak = 0
-  for (const r of Object.values(results)) if (r.util > peak) peak = r.util
+  for (const r of Object.values(evaluate(graph, qps, traffic))) if (r.util > peak) peak = r.util
   return peak
 }
 

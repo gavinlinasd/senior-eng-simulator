@@ -1,6 +1,5 @@
 import { CATALOGUE } from '../sim/catalogue'
-import { total } from '../sim/engine'
-import type { BreakingPoint, Level, Score, Shares, SimNode } from '../sim/types'
+import type { BreakingPoint, Level, NodeResult, Score, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
 import { Lesson } from './Lesson'
 import type { Phase } from './RunContext'
@@ -12,8 +11,9 @@ interface LevelPanelProps {
   errors: string[]
   phase: Phase
   failedNode: SimNode | null
+  /** What the failed node was receiving at the breaking point. */
+  failedLoad: NodeResult | null
   breaking: BreakingPoint | null
-  shares: Shares | null
   score: Score | null
   selectionLabel: string | null
   onRemoveSelected: () => void
@@ -30,8 +30,8 @@ export function LevelPanel({
   errors,
   phase,
   failedNode,
+  failedLoad,
   breaking,
-  shares,
   score,
   selectionLabel,
   onRemoveSelected,
@@ -41,8 +41,7 @@ export function LevelPanel({
   onNext,
   onOpenPicker,
 }: LevelPanelProps) {
-  const failedShare = failedNode ? (shares?.[failedNode.id] ?? { read: 0, write: 0 }) : null
-  const showClasses = (level.traffic?.write ?? 0) > 0
+  const showClasses = (level.traffic?.private ?? 0) > 0 || (level.traffic?.write ?? 0) > 0
   return (
     <aside className="panel">
       <div>
@@ -69,18 +68,18 @@ export function LevelPanel({
         </div>
       )}
 
-      {phase === 'failed' && failedNode && breaking && (
+      {phase === 'failed' && failedNode && breaking && failedLoad && (
         <div className="verdict verdict--over">
           <div className="verdict__title">
             {failedNode.name} hit 100% at {fmt(breaking.qps)} QPS
           </div>
           <div className="verdict__body">
-            Receiving {pct(failedShare ? total(failedShare) : 0)}% of all traffic
-            {showClasses && failedShare && (
+            Receiving {pct(failedLoad.load / breaking.qps)}% of all traffic
+            {showClasses && (
               <>
                 {' '}
-                ({fmt(failedShare.read * breaking.qps)} reads and {fmt(failedShare.write * breaking.qps)} writes a
-                second)
+                ({fmt(failedLoad.public)} public, {fmt(failedLoad.private)} private and {fmt(failedLoad.write)} writes
+                a second)
               </>
             )}{' '}
             against a capacity of {fmt(CATALOGUE[failedNode.type].capacity)} QPS.

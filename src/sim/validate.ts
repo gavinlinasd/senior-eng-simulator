@@ -1,13 +1,13 @@
 import { CATALOGUE, costOf } from './catalogue'
-import { ALL_READS, computeShares, total } from './engine'
+import { ALL_PUBLIC, evaluate, topoOrder } from './engine'
 import type { Graph, Level } from './types'
 
 /** Problems that block a run. Empty array means the graph can be simulated. */
 export function validate(graph: Graph, level: Level): string[] {
   const errors: string[] = []
   const byId = new Map(graph.nodes.map((n) => [n.id, n]))
-  const shares = computeShares(graph, level.traffic ?? ALL_READS)
-  if (!shares) errors.push('Requests are going around in a loop. Remove the cycle.')
+  const acyclic = topoOrder(graph) !== null
+  if (!acyclic) errors.push('Requests are going around in a loop. Remove the cycle.')
 
   const userIds = new Set(graph.nodes.filter((n) => n.type === 'users').map((n) => n.id))
   const userOuts = graph.edges.filter((e) => userIds.has(e.from))
@@ -28,19 +28,21 @@ export function validate(graph: Graph, level: Level): string[] {
     }
   }
 
-  if (shares) {
+  if (acyclic) {
+    const results = evaluate(graph, level.targetQps, level.traffic ?? ALL_PUBLIC)
     for (const n of graph.nodes) {
       const outs = graph.edges.filter((e) => e.from === n.id && byId.has(e.to))
-      if (n.type !== 'users' && total(shares[n.id]) === 0) {
+      if (n.type !== 'users' && results[n.id].load === 0) {
         errors.push(`${n.name} isn't receiving any traffic. Connect it or remove it.`)
       }
       if (CATALOGUE[n.type].needsDownstream && outs.length === 0) {
         errors.push(`${n.name} has nowhere to send requests.`)
       }
-      const hasCache = outs.some((e) => CATALOGUE[byId.get(e.to)!.type].absorbs)
-      const hasOnward = outs.some((e) => !CATALOGUE[byId.get(e.to)!.type].absorbs)
+      const isCache = (id: string) => CATALOGUE[byId.get(id)!.type].hitCurve !== undefined
+      const hasCache = outs.some((e) => isCache(e.to))
+      const hasOnward = outs.some((e) => !isCache(e.to))
       if (hasCache && !hasOnward) {
-        errors.push(`Cache misses from ${n.name} have nowhere to go. Wire it to the database too.`)
+        errors.push(`Cache misses from ${n.name} have nowhere to go. Wire it onward as well.`)
       }
     }
   }
