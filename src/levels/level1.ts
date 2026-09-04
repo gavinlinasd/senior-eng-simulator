@@ -10,6 +10,7 @@ export const level1 = defineLevel({
   targetQps: 1000,
   budget: 340,
   introduces: ['lb'],
+  introNotes: ['Wires can move. **Click a wire** to select it, then press its × or the Delete key, and draw a new one from the port.'],
   start: board('users', 'web'),
   solutions: [board('users', 'lb', web(4)), board('users', 'lb', { type: 'bigweb', count: 2 })],
   traps: [board('users', 'bigweb'), board('users', 'lb', [{ type: 'bigweb' }, { type: 'web' }])],

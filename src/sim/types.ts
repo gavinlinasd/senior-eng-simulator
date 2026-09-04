@@ -159,6 +159,8 @@ export interface Level {
   }
   /** Walkthrough shown the first time the level is entered. */
   intro?: IntroStep[]
+  /** Extra paragraphs appended to the generated intro, e.g. a control the level needs for the first time. */
+  introNotes?: string[]
   /** Takeaway shown when the level is passed. Names the technique the player just used. */
   lesson?: { title: string; body: string }
   /** Score thresholds for three and two stars. Any pass earns one. */

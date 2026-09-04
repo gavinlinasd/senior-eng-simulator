@@ -13,7 +13,11 @@ export function introFor(level: Level): IntroStep[] {
   return [
     {
       title: `Level ${level.id}: ${level.title}`,
-      body: [level.brief, `Target: ${fmt(level.targetQps)} requests a second on a $${level.budget} budget.`],
+      body: [
+        level.brief,
+        `Target: ${fmt(level.targetQps)} requests a second on a $${level.budget} budget.`,
+        ...(level.introNotes ?? []),
+      ],
       showMix: hasMix,
       cards: level.introduces,
     },

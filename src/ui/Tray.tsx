@@ -20,7 +20,10 @@ export function Tray({ palette, introduces, onAdd }: TrayProps) {
         <span className="tray__brand">
           <Cloud size={16} aria-hidden /> {PROVIDER}
         </span>
-        <span className="tray__hint">Drag onto the board or click to add. Wire from a right-hand port to a left-hand port.</span>
+        <span className="tray__hint">
+          Drag onto the board or click to add. Wire from a right-hand port to a left-hand port. Click a wire or a
+          component to select it; × or Delete removes it.
+        </span>
       </div>
       <div className="tray__items">
         {palette.map((type) => {
