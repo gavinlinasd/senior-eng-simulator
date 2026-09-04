@@ -50,12 +50,26 @@ export function RunHud({ phase, qps, targetQps, traffic, blocked, onPlay, onStop
       </div>
       <div className="hud__qps">
         {fmt(qps)} / {fmt(targetQps)} QPS
-        {traffic && (traffic.private > 0 || traffic.write > 0) && (
-          <span className="hud__mix">
-            {pct(traffic.public)}% public · {pct(traffic.private)}% private · {pct(traffic.write)}% writes
-          </span>
-        )}
       </div>
+      {traffic && (traffic.private > 0 || traffic.write > 0) && (
+        <table className="hud__mix">
+          <tbody>
+            {(
+              [
+                ['Public reads', traffic.public],
+                ['Private reads', traffic.private],
+                ['Writes', traffic.write],
+              ] as const
+            ).map(([label, share]) => (
+              <tr key={label}>
+                <td>{label}</td>
+                <td>{pct(share)}%</td>
+                <td>{fmt(qps * share)} QPS</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </Panel>
   )
 }

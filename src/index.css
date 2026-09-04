@@ -373,16 +373,34 @@ button:focus-visible,
 }
 
 .hud__qps {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   font-variant-numeric: tabular-nums;
 }
 
 .hud__mix {
-  color: rgba(255, 255, 255, 0.6);
+  width: 100%;
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-collapse: collapse;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__mix td {
+  padding: 2px 0;
+}
+
+.hud__mix td + td {
+  padding-left: 14px;
+  text-align: right;
+}
+
+.hud__mix td:last-child {
+  color: white;
+  font-weight: 600;
 }
 
 /* ---------- tray ---------- */
