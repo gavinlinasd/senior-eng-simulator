@@ -54,6 +54,19 @@ function isStructural(changes: Array<NodeChange<FlowNode> | EdgeChange<FlowEdge>
   return changes.some((c) => c.type === 'add' || c.type === 'remove')
 }
 
+/** The level in the URL hash (#level=2), or null. */
+function levelIndexFromHash(): number | null {
+  const m = /level=(\d+)/.exec(window.location.hash)
+  if (!m) return null
+  const index = LEVELS.findIndex((l) => l.id === Number(m[1]))
+  return index === -1 ? null : index
+}
+
+function writeLevelToHash(index: number) {
+  const hash = `#level=${LEVELS[index].id}`
+  if (window.location.hash !== hash) window.history.replaceState(null, '', hash)
+}
+
 /**
  * Whether to open a level's walkthrough on entry. A one-page intro shows every
  * time the level is entered; a guided multi-step tutorial only until dismissed.
@@ -65,7 +78,7 @@ function tourStartFor(levelIndex: number): number | null {
 }
 
 function Game() {
-  const [levelIndex, setLevelIndex] = useState(0)
+  const [levelIndex, setLevelIndex] = useState(() => levelIndexFromHash() ?? 0)
   const level = LEVELS[levelIndex]
   const hasNext = levelIndex < LEVELS.length - 1
 
@@ -95,7 +108,7 @@ function Game() {
   // ----- walkthrough -----
   // Index of the current step, or null when closed. A ref mirrors it so run
   // callbacks (which fire from animation frames) can read the latest value.
-  const [tourIndex, setTourIndexState] = useState<number | null>(() => tourStartFor(0))
+  const [tourIndex, setTourIndexState] = useState<number | null>(() => tourStartFor(levelIndexFromHash() ?? 0))
   const tourRef = useRef(tourIndex)
   const setTourIndex = useCallback((i: number | null) => {
     tourRef.current = i
@@ -155,12 +168,25 @@ function Game() {
       void fitView(FIT_VIEW_OPTIONS)
       setTourIndex(withIntro ? tourStartFor(index) : null)
       if (withIntro) setHintsShown(0)
+      writeLevelToHash(index)
     },
     [reset, setNodes, setEdges, fitView, setTourIndex],
   )
 
   /** Jump to a level with its own fresh board. */
   const loadLevel = useCallback((index: number) => enterLevel(index, LEVELS[index].start, true), [enterLevel])
+
+  // Keep the URL and the level in step: write on entry, follow back/forward.
+  useEffect(() => {
+    writeLevelToHash(levelIndex)
+    const onHash = () => {
+      const index = levelIndexFromHash()
+      if (index === null) writeLevelToHash(levelIndex)
+      else if (index !== levelIndex) loadLevel(index)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [levelIndex, loadLevel])
   /** Back to the board this level was entered with. No intro again. */
   const resetLevel = useCallback(() => enterLevel(levelIndex, entryBoard, false), [enterLevel, levelIndex, entryBoard])
   /** Advance, carrying the current board into the next level. */
