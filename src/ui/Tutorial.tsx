@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { ClassLoad, IntroStep, TourTarget } from '../sim/types'
+import { PROVIDER_SHORT } from './brand'
 import { ComponentCard } from './ComponentCard'
 import { RichText } from './RichText'
 import { TrafficMixBar } from './TrafficMixBar'
@@ -188,7 +189,7 @@ export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: Tut
           )}
           {step.cards?.map((type) => (
             <div key={type} className="tour__figure">
-              <div className="tour__caption">New from Bmazon</div>
+              <div className="tour__caption">New from {PROVIDER_SHORT}</div>
               <div className="tray__item tray__item--static is-new">
                 <ComponentCard type={type} isNew />
               </div>

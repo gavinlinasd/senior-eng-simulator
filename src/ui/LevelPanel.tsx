@@ -1,4 +1,5 @@
 import { Lightbulb } from 'lucide-react'
+import { GAME_NAME, GAME_TAGLINE } from './brand'
 import { CATALOGUE } from '../sim/catalogue'
 import type { BreakingPoint, Level, NodeResult, Score, SimNode } from '../sim/types'
 import { fmt, pct } from './format'
@@ -54,8 +55,8 @@ export function LevelPanel({
   return (
     <aside className="panel">
       <div>
-        <div className="brand">Senior Eng Simulator</div>
-        <div className="brand__tagline">Learn how to design distributed systems!</div>
+        <div className="brand">{GAME_NAME}</div>
+        <div className="brand__tagline">{GAME_TAGLINE}</div>
       </div>
       <div>
         <div className="panel__eyebrow">Level {level.id}</div>

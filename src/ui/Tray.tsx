@@ -1,6 +1,7 @@
 import type { DragEvent, KeyboardEvent } from 'react'
 import { Cloud } from 'lucide-react'
 import type { NodeType } from '../sim/types'
+import { PROVIDER } from './brand'
 import { ComponentCard } from './ComponentCard'
 import { DRAG_MIME } from './flow'
 
@@ -17,7 +18,7 @@ export function Tray({ palette, introduces, onAdd }: TrayProps) {
     <footer className="tray">
       <div className="tray__header">
         <span className="tray__brand">
-          <Cloud size={16} aria-hidden /> Bmazon Web Service
+          <Cloud size={16} aria-hidden /> {PROVIDER}
         </span>
         <span className="tray__hint">Drag onto the board or click to add. Wire from a right-hand port to a left-hand port.</span>
       </div>

@@ -18,6 +18,7 @@ import { score as scoreOf } from './sim/score'
 import type { Graph, NodeType } from './sim/types'
 import { validate } from './sim/validate'
 import { Board } from './ui/Board'
+import { GAME_NAME } from './ui/brand'
 import { introFor } from './ui/defaultIntro'
 import {
   FIT_VIEW_OPTIONS,
@@ -90,7 +91,7 @@ function Game() {
   const { deleteElements, fitView } = useReactFlow()
 
   useEffect(() => {
-    document.title = `Senior Eng Simulator · Level ${level.id}: ${level.title}`
+    document.title = `${GAME_NAME} · Level ${level.id}: ${level.title}`
   }, [level])
 
   // Derived sim state. The graph changes identity on every drag frame, so the
