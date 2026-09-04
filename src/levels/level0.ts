@@ -30,7 +30,7 @@ export const level0 = defineLevel({
       target: 'tray',
       title: 'Meet Bmazon Web Service',
       body: [
-        'Everything you can rent. Each card shows the most requests a second that machine can take, and what it costs. Drag one onto the board, or click it. The card marked New is this level’s unlock.',
+        'All the products available to you, with their capacity and cost. New products unlock in later levels.',
       ],
     },
     {

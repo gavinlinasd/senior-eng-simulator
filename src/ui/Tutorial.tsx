@@ -31,28 +31,63 @@ function measure(target: TourTarget): Rect | null {
   return { left: r.left - PAD, top: r.top - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 }
 }
 
-/** Put the card below, above, left of, or right of the spotlight, whichever fits; else centre it on the target. */
-function place(rect: Rect | null, card: { width: number; height: number }) {
+const OBSTACLES = '.react-flow__node, .hud'
+
+function measureObstacles(): Rect[] {
+  return Array.from(document.querySelectorAll(OBSTACLES)).map((el) => {
+    const r = el.getBoundingClientRect()
+    return { left: r.left, top: r.top, width: r.width, height: r.height }
+  })
+}
+
+const overlaps = (a: Rect, b: Rect, gap = 8) =>
+  a.left < b.left + b.width + gap &&
+  a.left + a.width + gap > b.left &&
+  a.top < b.top + b.height + gap &&
+  a.top + a.height + gap > b.top
+
+/**
+ * Where to put the card. Beside the spotlight if that fits, otherwise a free
+ * corner of the board; every candidate is checked against the board's nodes
+ * and the HUD so the card never hides what the step is asking the player to
+ * touch. Falls back to the first candidate that fits the viewport.
+ */
+function place(rect: Rect | null, card: { width: number; height: number }, obstacles: Rect[]) {
   const vw = window.innerWidth
   const vh = window.innerHeight
   const clampX = (x: number) => Math.min(Math.max(x, MARGIN), vw - card.width - MARGIN)
   const clampY = (y: number) => Math.min(Math.max(y, MARGIN), vh - card.height - MARGIN)
   if (!rect) return { left: (vw - card.width) / 2, top: (vh - card.height) / 2 }
+
   const cx = rect.left + rect.width / 2
   const cy = rect.top + rect.height / 2
-  if (rect.top + rect.height + GAP + card.height <= vh - MARGIN) {
-    return { left: clampX(cx - card.width / 2), top: rect.top + rect.height + GAP }
+  const board = document.querySelector('.board')?.getBoundingClientRect()
+  const candidates = [
+    { left: clampX(cx - card.width / 2), top: rect.top + rect.height + GAP },
+    { left: clampX(cx - card.width / 2), top: rect.top - GAP - card.height },
+    { left: rect.left - GAP - card.width, top: clampY(cy - card.height / 2) },
+    { left: rect.left + rect.width + GAP, top: clampY(cy - card.height / 2) },
+  ]
+  if (board) {
+    const right = board.right - card.width - MARGIN
+    const bottom = board.bottom - card.height - MARGIN
+    candidates.push(
+      { left: right, top: board.top + MARGIN },
+      { left: right, top: bottom },
+      { left: board.left + MARGIN, top: bottom },
+      { left: board.left + MARGIN, top: board.top + MARGIN },
+    )
   }
-  if (rect.top - GAP - card.height >= MARGIN) {
-    return { left: clampX(cx - card.width / 2), top: rect.top - GAP - card.height }
+  const inViewport = (c: { left: number; top: number }) =>
+    c.left >= MARGIN && c.top >= MARGIN && c.left + card.width <= vw - MARGIN && c.top + card.height <= vh - MARGIN
+  const clear = (c: { left: number; top: number }) => {
+    const box = { ...c, width: card.width, height: card.height }
+    return !overlaps(box, rect) && !obstacles.some((o) => overlaps(box, o))
   }
-  if (rect.left - GAP - card.width >= MARGIN) {
-    return { left: rect.left - GAP - card.width, top: clampY(cy - card.height / 2) }
-  }
-  if (rect.left + rect.width + GAP + card.width <= vw - MARGIN) {
-    return { left: rect.left + rect.width + GAP, top: clampY(cy - card.height / 2) }
-  }
-  return { left: clampX(cx - card.width / 2), top: clampY(cy - card.height / 2) }
+  return (
+    candidates.find((c) => inViewport(c) && clear(c)) ??
+    candidates.find(inViewport) ?? { left: clampX(cx - card.width / 2), top: clampY(cy - card.height / 2) }
+  )
 }
 
 interface TutorialProps {
@@ -73,6 +108,7 @@ interface TutorialProps {
  */
 export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: TutorialProps) {
   const [rect, setRect] = useState<Rect | null>(null)
+  const [obstacles, setObstacles] = useState<Rect[]>([])
   const [card, setCard] = useState({ width: 400, height: 200 })
   const cardRef = useRef<HTMLDivElement>(null)
   const step = index === null ? null : steps[index]
@@ -82,18 +118,22 @@ export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: Tut
     if (!step) return
     const update = () => {
       setRect(target ? measure(target) : null)
+      setObstacles(measureObstacles())
       if (cardRef.current) {
         const r = cardRef.current.getBoundingClientRect()
         setCard((c) => (c.width === r.width && c.height === r.height ? c : { width: r.width, height: r.height }))
       }
     }
     update()
+    // Nodes move when dragged and the board pans; re-check after any pointer gesture ends.
     window.addEventListener('resize', update)
+    window.addEventListener('pointerup', update)
     const observer = new ResizeObserver(update)
     const el = target ? document.querySelector(TARGETS[target]) : null
     if (el) observer.observe(el)
     return () => {
       window.removeEventListener('resize', update)
+      window.removeEventListener('pointerup', update)
       observer.disconnect()
     }
   }, [step, target, index])
@@ -101,9 +141,9 @@ export function Tutorial({ steps, traffic, index, onNext, onBack, onClose }: Tut
   if (!step || index === null) return null
   const last = index === steps.length - 1
   const single = steps.length === 1
-  const pos = place(rect, card)
   // Steps that wait for the player leave the page bright and ring the target instead of dimming around it.
   const interactive = Boolean(step.advance)
+  const pos = place(rect, card, interactive ? obstacles : [])
 
   return (
     <div className="tour" role="dialog" aria-labelledby="tour-title">
